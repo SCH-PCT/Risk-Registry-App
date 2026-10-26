@@ -1,0 +1,365 @@
+@import '../../../styles/theme';
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  background-color: $rr-surface-alt;
+  color: $rr-ink;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+// --- Header -----------------------------------------------------------
+
+.headerRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.titleBlock {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: $rr-ink;
+}
+
+.countChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.1875rem 0.625rem;
+  border-radius: 999px;
+  background-color: $rr-surface-container;
+  color: $rr-teal-900;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.pulseDot {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 999px;
+  background-color: $rr-teal-900;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.primaryButton,
+.secondaryButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.875rem;
+  border-radius: $rr-radius-sm;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.primaryButton {
+  background-color: $rr-teal-900;
+  color: #ffffff;
+
+  &:hover {
+    background-color: $rr-teal-700;
+  }
+}
+
+.secondaryButton {
+  background-color: $rr-surface;
+  color: $rr-ink;
+  border-color: $rr-border;
+
+  &:hover {
+    background-color: $rr-surface-container-low;
+  }
+}
+
+// --- KPI tiles ----------------------------------------------------------
+
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 1rem;
+}
+
+// --- Filter panel ---------------------------------------------------------
+
+.filterPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  padding: 1rem;
+  border-radius: $rr-radius;
+  background-color: $rr-surface;
+  box-shadow: $rr-shadow;
+}
+
+.filterRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.statusFilterGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.625rem;
+  border-radius: $rr-radius-sm;
+  background-color: $rr-surface-container-low;
+}
+
+.filterLabel {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: $rr-ink-secondary;
+}
+
+.statusSelect {
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: $rr-ink;
+
+  &:focus-visible {
+    outline: 2px solid $rr-teal-600;
+  }
+}
+
+.searchGroup {
+  flex: 1 1 14rem;
+  min-width: 12rem;
+}
+
+.searchBox {
+  border-radius: $rr-radius-sm;
+}
+
+.activeFiltersRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid $rr-surface-container-low;
+}
+
+.activeFiltersLabel {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: $rr-ink-secondary;
+}
+
+.filterChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: $rr-radius-sm;
+  background-color: $rr-surface-container;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: $rr-ink;
+}
+
+.chipClose {
+  font-size: 0.625rem;
+  cursor: pointer;
+
+  &:hover {
+    color: $rr-critical;
+  }
+}
+
+.resetAllButton {
+  padding: 0;
+  border: none;
+  background: none;
+  color: $rr-teal-900;
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.summaryRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-top: 0.25rem;
+  font-size: 0.8125rem;
+  color: $rr-ink-secondary;
+
+  strong {
+    color: $rr-ink;
+    font-weight: 700;
+  }
+}
+
+.staleNote {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: $rr-amber-700;
+  font-weight: 600;
+}
+
+// --- Card list --------------------------------------------------------
+
+.cardList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+// --- Pagination ---------------------------------------------------------
+
+.paginationBar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: $rr-radius;
+  background-color: $rr-surface;
+  box-shadow: $rr-shadow;
+
+  @media (min-width: 40rem) {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+}
+
+.paginationSummary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.8125rem;
+  color: $rr-ink-secondary;
+
+  strong {
+    color: $rr-ink;
+    font-weight: 700;
+  }
+}
+
+.pageSizeGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.pageSizeSelect {
+  padding: 0.25rem 0.5rem;
+  border-radius: $rr-radius-sm;
+  border: 1px solid $rr-border;
+  background-color: $rr-surface-container-low;
+  color: $rr-ink;
+  font-family: inherit;
+  font-weight: 600;
+}
+
+.paginationControls {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.pageNavButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: $rr-radius-sm;
+  border: none;
+  background-color: $rr-surface-container-low;
+  color: $rr-ink-secondary;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background-color: $rr-surface-container;
+    color: $rr-ink;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.pageNumberButton {
+  width: 2rem;
+  height: 2rem;
+  border-radius: $rr-radius-sm;
+  border: none;
+  background-color: $rr-surface-container-low;
+  color: $rr-ink;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+
+  &:hover {
+    background-color: $rr-surface-container;
+  }
+}
+
+.pageNumberActive {
+  background-color: $rr-teal-900;
+  color: #ffffff;
+
+  &:hover {
+    background-color: $rr-teal-900;
+  }
+}
+
+.pageEllipsis {
+  padding: 0 0.25rem;
+  color: $rr-ink-secondary;
+}
+
+// --- Footer status row ----------------------------------------------------
+
+.footerRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.25rem 0.25rem 0;
+}

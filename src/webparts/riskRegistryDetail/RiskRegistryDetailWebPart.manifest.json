@@ -1,0 +1,29 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx/client-side-web-part-manifest.schema.json",
+
+  "id": "d25ffb07-6eb6-4a11-8a3b-f5e9b3b8b954",
+  "alias": "RiskRegistryDetailWebPart",
+  "componentType": "WebPart",
+
+  "version": "*",
+  "manifestVersion": 2,
+
+  "requiresCustomScript": false,
+  "supportsThemeVariants": true,
+  "supportsFullBleed": true,
+
+  "preconfiguredEntries": [
+    {
+      "groupId": "5c03119e-3074-46fd-976b-c60198311f70",
+      "group": { "default": "Advanced" },
+      "title": { "default": "Risk Registry Detail" },
+      "description": { "default": "Displays and edits one risk registry record and its related information." },
+      "officeFabricIconFontName": "Preview",
+      "properties": {
+        "enableAutoRefresh": true,
+        "refreshIntervalSeconds": 60,
+        "showLastRefreshed": true
+      }
+    }
+  ]
+}

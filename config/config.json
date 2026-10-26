@@ -1,0 +1,36 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/config.2.0.schema.json",
+  "version": "2.0",
+  "bundles": {
+    "risk-registry-top-navigation-application-customizer": {
+      "components": [
+        {
+          "entrypoint": "./lib/extensions/riskRegistryTopNavigation/RiskRegistryTopNavigationApplicationCustomizer.js",
+          "manifest": "./src/extensions/riskRegistryTopNavigation/RiskRegistryTopNavigationApplicationCustomizer.manifest.json"
+        }
+      ]
+    },
+    "risk-registry-detail-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/riskRegistryDetail/RiskRegistryDetailWebPart.js",
+          "manifest": "./src/webparts/riskRegistryDetail/RiskRegistryDetailWebPart.manifest.json"
+        }
+      ]
+    },
+    "risk-registry-list-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/riskRegistryList/RiskRegistryListWebPart.js",
+          "manifest": "./src/webparts/riskRegistryList/RiskRegistryListWebPart.manifest.json"
+        }
+      ]
+    }
+  },
+  "externals": {},
+  "localizedResources": {
+    "RiskRegistryTopNavigationApplicationCustomizerStrings": "lib/extensions/riskRegistryTopNavigation/loc/{locale}.js",
+    "RiskRegistryDetailWebPartStrings": "lib/webparts/riskRegistryDetail/loc/{locale}.js",
+    "RiskRegistryListWebPartStrings": "lib/webparts/riskRegistryList/loc/{locale}.js"
+  }
+}

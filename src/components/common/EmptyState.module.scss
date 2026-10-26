@@ -1,0 +1,8 @@
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  color: var(--neutralSecondary, #605e5c);
+  font-size: 0.875rem;
+}

@@ -1,0 +1,23 @@
+{
+  "@microsoft/generator-sharepoint": {
+    "whichFolder": "subdir",
+    "solutionName": "Risk Registry",
+    "useGulp": false,
+    "componentType": "extension",
+    "template": "react",
+    "componentName": "RiskRegistryTopNavigation",
+    "componentDescription": "Risk Registry top navigation application customizer",
+    "plusBeta": false,
+    "isCreatingSolution": true,
+    "nodeVersion": "22.19.0",
+    "sdksVersions": {},
+    "version": "1.23.2",
+    "libraryName": "risk-registry",
+    "libraryId": "cf8a40ca-692a-4fb8-855a-d90189a70dd9",
+    "environment": "spo",
+    "packageManager": "npm",
+    "solutionShortDescription": "Risk Registry description",
+    "skipFeatureDeployment": false,
+    "isDomainIsolated": false
+  }
+}

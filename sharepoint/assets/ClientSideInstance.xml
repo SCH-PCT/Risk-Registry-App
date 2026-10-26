@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  TENANT-WIDE deployment of the application customizer.
+
+  This file is only consulted when the solution is deployed to the TENANT app catalog
+  with `skipFeatureDeployment: true` — the "make this solution available to all sites"
+  option. It then registers the customizer across every site in the tenant at once,
+  without anyone installing the app site by site.
+
+  ## This is not how Risk Registry is meant to be deployed
+
+  ARCHITECTURE.md specifies a **site collection app catalog**, and
+  `config/package-solution.json` sets `skipFeatureDeployment: false`. Under that
+  configuration this file is inert: registration comes from elements.xml, scoped to
+  the one site where the app is installed. That is the correct arrangement for this
+  solution, because the navigation reads an `appTopNavigation` list that exists only
+  on the site the package is installed to. Every other site in the tenant would
+  render an empty bar and log a missing-list warning on every page.
+
+  The file is checked in so the tenant-wide option is a deliberate, reviewed change —
+  flipping `skipFeatureDeployment` and re-deploying — rather than something a future
+  maintainer has to reconstruct from documentation.
+
+  ClientSideComponentId must match the extension manifest id and the elements.xml entry.
+-->
+<Elements xmlns="http://schemas.microsoft.com/sharepoint/">
+  <ClientSideComponentInstance
+      Title="Risk Registry Top Navigation"
+      Location="ClientSideExtension.ApplicationCustomizer"
+      ComponentId="8ed72716-81d8-4c21-b141-024414347ad5"
+      Properties="{}">
+  </ClientSideComponentInstance>
+</Elements>

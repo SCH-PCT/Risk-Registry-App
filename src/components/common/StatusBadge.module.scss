@@ -1,0 +1,58 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.625rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+  white-space: nowrap;
+}
+
+.icon {
+  font-size: 0.75rem;
+}
+
+.neutral {
+  background-color: #eaeef5;
+  color: #40484c;
+}
+
+/*
+ * Retinted to the Risk Registry Detail web part's "Clinical Clarity"
+ * palette (see `webparts/riskRegistryDetail/components/_theme.scss`) rather
+ * than importing that file directly — this is a shared "common" component,
+ * so it stays decoupled from any one feature's theme rather than depending
+ * on it, even though today it only has the one consumer. `.warning` and
+ * `.danger` mirror the design's Moderate/High and Critical severity-scale
+ * colors respectively.
+ */
+.info {
+  background-color: #e0f2f7;
+  color: #004d62;
+}
+
+.success {
+  background-color: #f0fdf4;
+  color: #15803d;
+}
+
+.warning {
+  background-color: #fff7ed;
+  color: #c2410c;
+}
+
+.danger {
+  background-color: #fff1f2;
+  color: #be123c;
+}
+
+@media screen and (forced-colors: active) {
+  .badge {
+    forced-color-adjust: none;
+    border: 1px solid CanvasText;
+    background-color: Canvas;
+    color: CanvasText;
+  }
+}

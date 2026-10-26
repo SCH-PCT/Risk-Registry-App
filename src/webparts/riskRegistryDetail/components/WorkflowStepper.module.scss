@@ -1,0 +1,174 @@
+@import '../../../styles/theme';
+
+.stepper {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0.75rem 0 0;
+  list-style: none;
+  border-top: 1px solid $rr-border;
+
+  @media screen and (max-width: 900px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media screen and (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.item {
+  min-width: 0;
+}
+
+.tile {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  text-align: left;
+  padding: 0.875rem;
+  background-color: rgba($rr-surface-container-low, 0.6);
+  border: 1px solid $rr-border;
+  border-radius: $rr-radius;
+  box-shadow: $rr-shadow;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+
+  &:hover {
+    border-color: $rr-teal-600;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $rr-teal-600;
+    outline-offset: 1px;
+  }
+}
+
+.tileTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.stepEyebrow {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: $rr-ink-secondary;
+  font-family: 'Consolas', 'JetBrains Mono', monospace;
+}
+
+.statusChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  background-color: $rr-surface-container;
+  color: $rr-ink-secondary;
+  font-size: 0.6875rem;
+  font-weight: 700;
+
+  :global(i) {
+    font-size: 0.75rem;
+  }
+}
+
+.statusChipActive {
+  background-color: $rr-teal-900;
+  color: #ffffff;
+}
+
+.tileMain {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.tileIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 2rem;
+  height: 2rem;
+  border-radius: $rr-radius-sm;
+  background-color: $rr-surface-container;
+  border: 1px solid $rr-border;
+  color: $rr-teal-900;
+  font-size: 1.0625rem;
+  box-shadow: $rr-shadow;
+}
+
+.tileTitle {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: $rr-ink;
+}
+
+.tileDescription {
+  margin: 0;
+  font-size: 0.75rem;
+  color: $rr-ink-secondary;
+  line-height: 1.3;
+}
+
+.active {
+  border-color: $rr-teal-900;
+  border-width: 2px;
+  padding: 0.75rem;
+  background-color: rgba($rr-teal-100, 0.6);
+
+  .stepEyebrow {
+    color: $rr-teal-900;
+    font-weight: 700;
+  }
+
+  .tileIcon {
+    background-color: $rr-teal-900;
+    border-color: $rr-teal-900;
+    color: #ffffff;
+  }
+
+  .tileTitle {
+    color: $rr-teal-900;
+    font-weight: 700;
+  }
+}
+
+.activeBar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 0.25rem;
+  background-color: $rr-teal-900;
+}
+
+@media screen and (forced-colors: active) {
+  .tile {
+    forced-color-adjust: none;
+    border-color: CanvasText;
+    color: CanvasText;
+  }
+
+  .active {
+    border-color: Highlight;
+  }
+
+  .statusChipActive {
+    background-color: Highlight;
+    color: HighlightText;
+  }
+}

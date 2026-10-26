@@ -1,0 +1,232 @@
+/*
+ * Risk Registry top navigation.
+ *
+ * Nothing here selects a SharePoint DOM node, class name or data attribute. Those are
+ * undocumented and change without notice, so a selector reaching into them is a
+ * site-wide outage waiting for the next service update. In particular nothing hides,
+ * moves or overlaps the suite bar — it is Microsoft's chrome and stays visible and
+ * clickable.
+ *
+ * Colours are theme-driven CSS custom properties rather than literals. SharePoint
+ * injects `--theme*` and `--neutral*` variables on modern pages to match the site's
+ * current theme (including dark/high-contrast variants where the tenant provides
+ * them), and every rule below reads from those with a Fluent-blue/neutral fallback
+ * for the rare page that has not set them yet. This is deliberately different from
+ * the project this was ported from, which hard-coded a bespoke brand palette — that
+ * is correct for a brand-specific product but wrong here, where the brief asks for
+ * SharePoint theme-following rather than a fixed corporate palette.
+ */
+
+$rr-nav-height: 3rem;
+$rr-nav-font: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif;
+$rr-nav-font-size: 0.875rem;
+$rr-nav-font-weight: 500;
+
+.topNavigation {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  width: 100%;
+  min-height: $rr-nav-height;
+  padding: 0 1.5rem;
+  background-color: var(--bodyBackground, #ffffff);
+  border-bottom: 1px solid var(--neutralLight, #edebe9);
+  font-family: $rr-nav-font;
+  /* rem so the bar scales with browser and OS font size; a fixed px height is what
+     breaks a navigation bar at 200% zoom. */
+  font-size: $rr-nav-font-size;
+}
+
+.branding {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 0 0 auto;
+  min-width: 0;
+  text-decoration: none;
+  color: var(--themePrimary, #0078d4);
+  font-size: 1rem;
+  font-weight: 700;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--themePrimary, #0078d4);
+    outline-offset: 2px;
+  }
+}
+
+.logo {
+  /* Height in em so the logo tracks the adjacent text at any zoom level. `width: auto`
+     preserves the aspect ratio of whatever the site owner uploaded. */
+  height: 1.5em;
+  width: auto;
+  max-width: 10rem;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
+.siteTitle {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 16rem;
+}
+
+.itemsRegion {
+  /*
+   * `min-width: 0` lets this flex child shrink below its content width. Without it the
+   * container never reports a width smaller than its items and the overflow measurement
+   * never triggers.
+   */
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.itemList {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  min-width: 0;
+}
+
+.item {
+  flex: 0 0 auto;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.625rem 0.75rem;
+  color: var(--neutralSecondary, #605e5c);
+  text-decoration: none;
+  white-space: nowrap;
+  font-size: $rr-nav-font-size;
+  font-weight: $rr-nav-font-weight;
+
+  /*
+   * A transparent bottom border reserves the space the active underline occupies, so
+   * selecting an item does not shift the row by its thickness.
+   */
+  border-bottom: 3px solid transparent;
+
+  &:hover {
+    color: var(--neutralPrimary, #323130);
+    background-color: var(--neutralLighter, #f3f2f1);
+  }
+
+  /*
+   * Keyboard focus must be visible. `:focus-visible` keeps the ring off mouse clicks
+   * while guaranteeing it for keyboard users, and `outline` (not `box-shadow`) is used
+   * because forced-colors mode honours outlines and discards shadows.
+   */
+  &:focus-visible {
+    outline: 2px solid var(--themePrimary, #0078d4);
+    outline-offset: -2px;
+  }
+}
+
+/*
+ * The active item: theme-primary text over a solid underline. Only the colour of the
+ * border already reserved on `.link` changes, so nothing moves when the selection does.
+ */
+.activeLink {
+  color: var(--themePrimary, #0078d4);
+  font-weight: 600;
+  border-bottom-color: var(--themePrimary, #0078d4);
+}
+
+.linkIcon {
+  flex: 0 0 auto;
+  color: currentColor;
+}
+
+.linkLabel {
+  min-width: 0;
+}
+
+.overflowButton {
+  flex: 0 0 auto;
+}
+
+/*
+ * Items rendered off-screen purely to be measured.
+ *
+ * `visibility: hidden` rather than `display: none`: a display-none element has no box and
+ * reports zero width, which would make every measurement zero. It is removed from the
+ * accessibility tree with aria-hidden and from the tab order in the component, so
+ * assistive technology never encounters the duplicate copy.
+ */
+.measurementLayer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  visibility: hidden;
+  pointer-events: none;
+  white-space: nowrap;
+  display: flex;
+  gap: 0.25rem;
+}
+
+.status {
+  color: var(--neutralSecondary, #605e5c);
+  font-size: 0.8125rem;
+}
+
+/* Windows High Contrast / forced-colors. */
+@media screen and (forced-colors: active) {
+  .topNavigation {
+    border-bottom: 1px solid CanvasText;
+  }
+
+  .link {
+    /* forced-colors discards author colours, so the active state needs a non-colour cue. */
+    forced-color-adjust: none;
+    color: LinkText;
+  }
+
+  .activeLink {
+    color: LinkText;
+    border-bottom-color: Highlight;
+    text-decoration: underline;
+  }
+
+  .link:focus-visible {
+    outline: 2px solid Highlight;
+  }
+}
+
+/*
+ * Users who have asked their OS for less motion get none. This is a vestibular
+ * accessibility requirement, not a preference.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .topNavigation,
+  .link,
+  .branding {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* Narrow viewports: the branding title yields space before the links do. */
+@media screen and (max-width: 640px) {
+  .topNavigation {
+    gap: 0.75rem;
+    padding: 0 0.75rem;
+  }
+
+  .siteTitle {
+    max-width: 8rem;
+  }
+}

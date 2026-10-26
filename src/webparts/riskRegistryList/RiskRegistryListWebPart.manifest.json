@@ -1,0 +1,30 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx/client-side-web-part-manifest.schema.json",
+
+  "id": "3e431e2c-cadd-42d1-9a2e-7e2d252e6b79",
+  "alias": "RiskRegistryListWebPart",
+  "componentType": "WebPart",
+
+  "version": "*",
+  "manifestVersion": 2,
+
+  "requiresCustomScript": false,
+  "supportsThemeVariants": true,
+  "supportsFullBleed": true,
+
+  "preconfiguredEntries": [
+    {
+      "groupId": "5c03119e-3074-46fd-976b-c60198311f70",
+      "group": { "default": "Advanced" },
+      "title": { "default": "Risk Registry List" },
+      "description": { "default": "Browse, search and filter risk registry records as a KPI-and-card dashboard." },
+      "officeFabricIconFontName": "GridViewMedium",
+      "properties": {
+        "enableAutoRefresh": true,
+        "refreshIntervalSeconds": 60,
+        "showLastRefreshed": true,
+        "detailPageUrl": ""
+      }
+    }
+  ]
+}

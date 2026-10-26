@@ -1,0 +1,124 @@
+@import '../../../styles/theme';
+
+.footer {
+  position: sticky;
+  bottom: 0.75rem;
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem;
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid $rr-border;
+  border-radius: $rr-radius;
+  box-shadow: $rr-shadow-pop;
+}
+
+.side {
+  display: flex;
+  align-items: center;
+  flex: 1 1 0;
+}
+
+/** The right-hand `.side` wrapper (Next Step) — pushes its button flush against the footer's right edge instead of just sitting at the start of its own equally-sized flex box. */
+.sideEnd {
+  justify-content: flex-end;
+}
+
+.center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+%footerButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 1.25rem;
+  border-radius: $rr-radius-sm;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $rr-teal-600;
+    outline-offset: 1px;
+  }
+}
+
+.previousButton {
+  @extend %footerButton;
+  background-color: $rr-surface-container-low;
+  border: 1px solid $rr-border;
+  // Matches `.nextButton`'s text color per explicit confirmation — the two
+  // sit side by side at the ends of the same bar, so they read as a pair.
+  color: $rr-teal-900;
+
+  &:hover:not(:disabled) {
+    background-color: $rr-surface-container;
+  }
+}
+
+.nextButton {
+  @extend %footerButton;
+  background-color: $rr-surface-container;
+  border: 1px solid $rr-border;
+  color: $rr-teal-900;
+
+  &:hover:not(:disabled) {
+    background-color: $rr-surface-container-low;
+  }
+}
+
+.submitButton {
+  @extend %footerButton;
+  padding: 0.5rem 1.75rem;
+  background-color: $rr-teal-900;
+  border: 1px solid $rr-teal-900;
+  color: #ffffff;
+  box-shadow: $rr-shadow;
+
+  &:hover:not(:disabled) {
+    background-color: $rr-teal-700;
+    border-color: $rr-teal-700;
+  }
+}
+
+@media screen and (max-width: 560px) {
+  .footer {
+    flex-direction: column;
+  }
+
+  .side {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media screen and (forced-colors: active) {
+  .previousButton,
+  .nextButton,
+  .submitButton {
+    forced-color-adjust: none;
+    border-color: CanvasText;
+    color: CanvasText;
+  }
+
+  .submitButton {
+    background-color: Highlight;
+    color: HighlightText;
+  }
+}

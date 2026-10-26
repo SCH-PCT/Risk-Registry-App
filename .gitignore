@@ -1,0 +1,62 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Dependency directories
+node_modules
+.vscode/
+.env
+
+# Build generated files
+dist
+lib
+lib-dts
+lib-commonjs
+lib-esm
+jest-output
+release
+solution
+temp
+*.sppkg
+.heft
+
+# Coverage directory used by tools like istanbul
+coverage
+
+# OSX
+.DS_Store
+
+# Visual Studio files
+.ntvs_analysis.dat
+.vs
+bin
+obj
+
+# Resx Generated Code
+*.resx.ts
+
+# Styles Generated Code
+*.scss.ts
+
+# Local AI / coding-assistant tooling and metadata
+.claude/
+.claude/**
+.copilot/
+.copilot/**
+.codex/
+.codex/**
+.chatgpt/
+.chatgpt/**
+.anthropic/
+.anthropic/**
+.github-copilot/
+.github-copilot/**
+*claude*
+*copilot*
+*anthropic*
+*codex*
+*chatgpt*
+*openai*
+*gpt*
+*llm*

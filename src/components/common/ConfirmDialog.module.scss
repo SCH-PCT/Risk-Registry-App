@@ -1,0 +1,36 @@
+// Wide enough that the three footer buttons ("Save Changes" / "Discard
+// Changes" / "Stay on This Step") always fit on one row at the current
+// button padding, without wrapping or clipping their labels.
+.container {
+  min-width: 36rem;
+  max-width: 90vw;
+}
+
+.footer {
+  display: flex;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: 0.75rem;
+}
+
+.footerButton {
+  flex: 0 0 auto;
+}
+
+@media screen and (max-width: 480px) {
+  .container {
+    min-width: 0;
+    width: calc(100vw - 2rem);
+  }
+
+  // Each button gets its own row rather than shrinking to fit — three
+  // full-width stacked buttons stay readable on a phone; three narrowed
+  // ones in a row would not.
+  .footer {
+    flex-direction: column;
+  }
+
+  .footerButton {
+    width: 100%;
+  }
+}

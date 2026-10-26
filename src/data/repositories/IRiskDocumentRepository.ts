@@ -1,0 +1,50 @@
+import { IRiskDocument } from '../../models/domain/IRiskDocument';
+
+/**
+ * Read and write access to the documents stored for one risk, plus the two
+ * link-building helpers the Detail web part's per-step upload/template/
+ * review UI needs (see `webparts/riskRegistryDetail/components/detailSections.ts`
+ * `IFieldGroup.templateDownload`/`documentUpload`/`reviewLink`).
+ *
+ * Unlike the other four related repositories, this one can be partially
+ * implemented today: file listing uses only universal SharePoint file
+ * properties (see `IRiskDocument`). What remains unverified is the
+ * folder-naming convention — see `PnpRiskDocumentRepository` and
+ * SCHEMA-TODO.md #27.
+ */
+export interface IRiskDocumentRepository {
+  /**
+   * @param riskBusinessId - The `RiskID` business field value (not the
+   *   system item ID — see `config/listSchema.ts`). `undefined` when the
+   *   current risk has no `RiskID` set, in which case this resolves to an
+   *   empty array rather than guessing a fallback folder.
+   */
+  getForRisk(riskBusinessId: number | undefined): Promise<IRiskDocument[]>;
+
+  /**
+   * Uploads `file` into the risk's document folder (named by `riskBusinessId`,
+   * per the same convention {@link getForRisk} reads from), creating that
+   * folder first if it does not exist yet. Overwrites an existing file of
+   * the same name — re-uploading a draft is expected to replace it, not
+   * create a second copy.
+   *
+   * @param riskBusinessId - The `RiskID` business field value. Callers must
+   *   not call this before the risk has one (an unsaved "create new" record)
+   *   — there is deliberately no fallback folder for that case, the same
+   *   policy {@link getForRisk} follows.
+   */
+  uploadForRisk(riskBusinessId: number, file: File): Promise<IRiskDocument>;
+
+  /**
+   * Resolves a URL that forces a browser download (rather than an Office
+   * Online preview) of `templateFileName` — e.g. `"SBAR Template.docx"` —
+   * from the site's own default document library ("Shared Documents")'s
+   * `Templates` folder. Deliberately a *different* library from the one
+   * `getForRisk`/`uploadForRisk`/`getRiskFolderBrowseUrl` use below, and
+   * verified against the live site (see `PnpRiskDocumentRepository`).
+   */
+  getTemplateDownloadUrl(templateFileName: string): Promise<string>;
+
+  /** Resolves a URL to the risk's document folder's default library view, for a "review the uploaded file(s)" link. */
+  getRiskFolderBrowseUrl(riskBusinessId: number): Promise<string>;
+}

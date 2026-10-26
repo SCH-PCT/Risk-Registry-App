@@ -1,0 +1,29 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/spfx-serve.schema.json",
+  "port": 4321,
+  "https": true,
+  "initialPage": "https://{tenantDomain}/_layouts/workbench.aspx",
+
+  "serveConfigurations": {
+    "riskRegistryTopNavigation": {
+      "//": [
+        "Debugs the application customizer against a real page.",
+        "",
+        "The workbench cannot host an extension - it has no Top placeholder and no",
+        "appTopNavigation list - so `pageUrl` must point at a modern page in a site that",
+        "has the list. Replace it before use; it is left as a placeholder because site",
+        "URLs are environment-specific and are never checked in.",
+        "",
+        "The customActions key MUST match the id in",
+        "RiskRegistryTopNavigationApplicationCustomizer.manifest.json."
+      ],
+      "pageUrl": "https://{tenantDomain}/sites/REPLACE-WITH-YOUR-SITE/SitePages/Home.aspx",
+      "customActions": {
+        "8ed72716-81d8-4c21-b141-024414347ad5": {
+          "location": "ClientSideExtension.ApplicationCustomizer",
+          "properties": {}
+        }
+      }
+    }
+  }
+}

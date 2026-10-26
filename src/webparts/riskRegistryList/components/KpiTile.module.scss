@@ -1,0 +1,127 @@
+@import '../../../styles/theme';
+
+.tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-radius: $rr-radius;
+  background-color: $rr-surface;
+  box-shadow: $rr-shadow;
+  overflow: hidden;
+}
+
+.accentBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 0.3125rem;
+}
+
+.critical .accentBar {
+  background-color: $rr-critical;
+}
+
+.teal .accentBar {
+  background-color: $rr-teal-900;
+}
+
+.amber .accentBar {
+  background-color: $rr-amber-700;
+}
+
+.green .accentBar {
+  background-color: $rr-green-700;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: $rr-ink-secondary;
+}
+
+.iconBadge {
+  flex: 0 0 auto;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+
+.critical .iconBadge {
+  background-color: $rr-critical-bg;
+  color: $rr-critical;
+}
+
+.teal .iconBadge {
+  background-color: $rr-teal-100;
+  color: $rr-teal-900;
+}
+
+.amber .iconBadge {
+  background-color: $rr-amber-100;
+  color: $rr-amber-700;
+}
+
+.green .iconBadge {
+  background-color: $rr-green-100;
+  color: $rr-green-700;
+}
+
+.valueRow {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.value {
+  font-size: 2rem;
+  line-height: 2.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: $rr-ink;
+}
+
+.footerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+}
+
+.caption {
+  color: $rr-ink-secondary;
+  font-weight: 500;
+}
+
+.link {
+  flex: 0 0 auto;
+  padding: 0;
+  border: none;
+  background: none;
+  color: $rr-teal-900;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

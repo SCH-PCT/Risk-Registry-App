@@ -1,0 +1,246 @@
+@import '../../../styles/theme';
+
+.card {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1rem 1rem 1.25rem;
+  border-radius: $rr-radius;
+  background-color: $rr-surface;
+  box-shadow: $rr-shadow;
+  border-left: 4px solid $rr-border;
+  transition: box-shadow 0.15s ease;
+}
+
+.tierCritical {
+  border-left-color: $rr-critical;
+}
+
+.tierHigh {
+  border-left-color: $rr-amber-700;
+}
+
+.tierModerate {
+  border-left-color: $rr-amber-700;
+}
+
+.tierLow {
+  border-left-color: $rr-green-700;
+}
+
+.clickable {
+  cursor: pointer;
+
+  &:hover {
+    box-shadow: $rr-shadow-pop;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $rr-teal-600;
+    outline-offset: 2px;
+  }
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  flex: 1 1 20rem;
+  min-width: 0;
+}
+
+.badgeRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.riskCode {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: $rr-radius-sm;
+  background-color: $rr-surface-container-low;
+  color: $rr-teal-900;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.copyIcon {
+  font-size: 0.75rem;
+  color: $rr-ink-secondary;
+  cursor: pointer;
+
+  &:hover {
+    color: $rr-teal-900;
+  }
+}
+
+.tierBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.625rem;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.tierCritical.tierBadge,
+.tierBadge.tierCritical {
+  background-color: $rr-critical-bg;
+  color: $rr-critical;
+}
+
+.tierHigh.tierBadge,
+.tierBadge.tierHigh,
+.tierModerate.tierBadge,
+.tierBadge.tierModerate {
+  background-color: $rr-amber-100;
+  color: $rr-amber-700;
+}
+
+.tierLow.tierBadge,
+.tierBadge.tierLow {
+  background-color: $rr-green-100;
+  color: $rr-green-700;
+}
+
+.harmBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: $rr-radius-sm;
+  background-color: $rr-critical-bg;
+  color: $rr-critical;
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+.title {
+  margin: 0.125rem 0 0;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  color: $rr-ink;
+}
+
+.metaRow,
+.submittedRow {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.8125rem;
+  color: $rr-ink-secondary;
+}
+
+.metaIcon {
+  font-size: 0.875rem;
+  color: $rr-teal-600;
+}
+
+.submittedRow strong {
+  color: $rr-ink;
+  font-weight: 600;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.625rem;
+  flex: 0 0 auto;
+}
+
+.stepProgress {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.6875rem;
+}
+
+.stepDivider {
+  color: $rr-border;
+}
+
+.stepLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: $rr-ink-secondary;
+  font-weight: 500;
+}
+
+.stepComplete {
+  color: $rr-ink-secondary;
+}
+
+.stepIcon {
+  font-size: 0.625rem;
+  color: $rr-ink-secondary;
+}
+
+.stepActive {
+  padding: 0.125rem 0.375rem;
+  border-radius: $rr-radius-sm;
+  background-color: $rr-teal-100;
+  color: $rr-teal-900;
+  font-weight: 700;
+}
+
+.stepPulse {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 999px;
+  background-color: $rr-teal-900;
+}
+
+.executive {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 11rem;
+}
+
+.avatar {
+  flex: 0 0 auto;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  background-color: $rr-teal-900;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.executiveText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.executiveName {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: $rr-ink;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.executiveRole {
+  font-size: 0.75rem;
+  color: $rr-ink-secondary;
+}

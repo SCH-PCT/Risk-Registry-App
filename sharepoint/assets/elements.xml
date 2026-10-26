@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Registers the Risk Registry top navigation application customizer as a
+  site-scoped CustomAction, so it runs on every page in the site the package is
+  installed to.
+
+  ClientSideComponentId MUST match the `id` in
+  src/extensions/riskRegistryTopNavigation/RiskRegistryTopNavigationApplicationCustomizer.manifest.json.
+  A mismatch deploys cleanly and then renders nothing, with no error anywhere — it is
+  the single most common cause of "the extension does not appear".
+
+  Location is the fixed literal `ClientSideExtension.ApplicationCustomizer`. It is not
+  the placeholder name: which placeholder is used is decided in code by the
+  `tryCreateContent(PlaceholderName.Top, ...)` call, not here.
+
+  ClientSideComponentProperties is intentionally absent. The navigation reads its
+  configuration from the `appTopNavigation` list, so there is nothing to configure per
+  deployment — and putting a site or list URL here would hard-code environment detail
+  into a package meant to be installed unchanged on Dev, Test and Prod.
+-->
+<Elements xmlns="http://schemas.microsoft.com/sharepoint/">
+  <CustomAction
+      Title="Risk Registry Top Navigation"
+      Description="Renders the Risk Registry top navigation bar in the SPFx Top placeholder."
+      Location="ClientSideExtension.ApplicationCustomizer"
+      ClientSideComponentId="8ed72716-81d8-4c21-b141-024414347ad5">
+  </CustomAction>
+</Elements>

@@ -1,0 +1,39 @@
+/*
+ * Shared "Clinical Clarity" design-system palette for every Risk Registry
+ * web part (Detail, List, and any future one). One place this look is
+ * defined — every consuming module references these variable names, so
+ * retinting here cascades everywhere without touching each file
+ * individually.
+ *
+ * Originally lived at `webparts/riskRegistryDetail/components/_theme.scss`;
+ * moved here once a second web part (List) needed the same palette, rather
+ * than forking a second copy that could drift from the first.
+ */
+
+$rr-teal-900: #00586f; // primary — deep clinical teal
+$rr-teal-700: #004759; // primary hover/pressed
+$rr-teal-600: #007897; // accent / focus ring / borders-on-hover
+$rr-teal-100: #e0f2f7; // primary tint — chip & badge backgrounds
+
+$rr-amber-700: #9b4500;
+$rr-amber-100: #fdecdc;
+
+$rr-green-700: #15803d;
+$rr-green-100: #f0fdf4;
+
+$rr-critical: #be123c;
+$rr-critical-bg: #fff1f2;
+$rr-critical-border: #fda4af;
+
+$rr-ink: #171c21;
+$rr-ink-secondary: #40484c;
+$rr-border: #dee3ea;
+$rr-surface: #ffffff;
+$rr-surface-alt: #f7f9ff;
+$rr-surface-container: #eaeef5;
+$rr-surface-container-low: #f0f4fb;
+
+$rr-radius: 0.5rem; // 8px — cards, grouped containers
+$rr-radius-sm: 0.25rem; // 4px — inputs, buttons, small chips
+$rr-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+$rr-shadow-pop: 0 4px 16px -2px rgba(15, 23, 42, 0.08), 0 2px 4px -1px rgba(15, 23, 42, 0.04);

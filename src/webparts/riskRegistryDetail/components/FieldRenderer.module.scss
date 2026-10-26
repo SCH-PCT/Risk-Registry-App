@@ -1,0 +1,63 @@
+@import '../../../styles/theme';
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  min-width: 0;
+
+  // Crisp, small-radius bordered inputs matching the design's form-field
+  // spec — overridden via :global since Fluent's own class names are not
+  // module-scoped, the same technique already used for `.tabs` in
+  // `StepCard.module.scss`.
+  //
+  // `.ms-BasePicker-text` (the person picker's input chrome) has no
+  // background-color of its own by default — Fluent leaves it transparent —
+  // so without this it shows the page background instead of the same white
+  // fill as the text/dropdown/date controls beside it.
+  :global(.ms-TextField-fieldGroup),
+  :global(.ms-Dropdown-title),
+  :global(.ms-DatePicker .ms-TextField-fieldGroup),
+  :global(.ms-BasePicker-text) {
+    background-color: $rr-surface;
+    border-radius: $rr-radius-sm;
+    border-color: $rr-border;
+  }
+
+  :global(.ms-TextField-fieldGroup:hover),
+  :global(.ms-Dropdown:hover .ms-Dropdown-title),
+  :global(.ms-BasePicker-text:hover) {
+    border-color: $rr-teal-600;
+  }
+
+  :global(.ms-TextField-fieldGroup.is-active),
+  :global(.ms-Dropdown.is-open .ms-Dropdown-title),
+  :global(.ms-BasePicker-text.is-active) {
+    border-color: $rr-teal-900;
+  }
+
+  :global(.ms-Dropdown-callout .ms-Dropdown-item.is-selected) {
+    background-color: $rr-teal-100;
+    color: $rr-teal-900;
+  }
+}
+
+.fieldLabel {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: $rr-ink-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.emptyValue {
+  color: var(--neutralTertiary, #a19f9d);
+}
+
+.noteValue {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 0.875rem;
+  color: $rr-ink;
+}

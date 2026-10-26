@@ -1,0 +1,44 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
+  "solution": {
+    "name": "risk-registry-client-side-solution",
+    "id": "cf8a40ca-692a-4fb8-855a-d90189a70dd9",
+    "version": "1.0.0.0",
+    "includeClientSideAssets": true,
+    "skipFeatureDeployment": false,
+    "isDomainIsolated": false,
+    "developer": {
+      "name": "",
+      "websiteUrl": "",
+      "privacyUrl": "",
+      "termsOfUseUrl": "",
+      "mpnId": "Undefined-1.23.2"
+    },
+    "metadata": {
+      "shortDescription": {
+        "default": "Risk Registry description"
+      },
+      "longDescription": {
+        "default": "Risk Registry description"
+      },
+      "screenshotPaths": [],
+      "videoUrl": "",
+      "categories": []
+    },
+    "features": [
+      {
+        "title": "Risk Registry",
+        "description": "Registers the Risk Registry top navigation application customizer on the site.",
+        "id": "dd2a417c-0017-45b9-820c-33184e828111",
+        "version": "1.0.0.0",
+        "assets": {
+          "elementManifests": ["elements.xml"],
+          "elementFiles": ["ClientSideInstance.xml"]
+        }
+      }
+    ]
+  },
+  "paths": {
+    "zippedPackage": "solution/risk-registry.sppkg"
+  }
+}

@@ -1,0 +1,91 @@
+@import '../../../styles/theme';
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  background-color: $rr-surface;
+  border: 1px solid $rr-border;
+  border-radius: $rr-radius;
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.heading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: $rr-teal-900;
+}
+
+.badge {
+  padding: 0.125rem 0.625rem;
+  border-radius: 999px;
+  background-color: $rr-surface-container-low;
+  border: 1px solid $rr-border;
+  color: $rr-teal-900;
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.statusNote {
+  font-size: 0.8125rem;
+  color: $rr-ink-secondary;
+  font-style: italic;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.listItem {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background-color: $rr-surface-container-low;
+  border: 1px solid $rr-border;
+  border-radius: $rr-radius-sm;
+}
+
+.fileIcon {
+  color: $rr-teal-900;
+  font-size: 0.875rem;
+}
+
+.fileLink {
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.modifiedDate {
+  margin-left: auto;
+  font-size: 0.6875rem;
+  color: $rr-ink-secondary;
+}
+
+.uploadRow {
+  padding-top: 0.5rem;
+  border-top: 1px dashed $rr-border;
+}

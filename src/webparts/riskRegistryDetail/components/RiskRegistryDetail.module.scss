@@ -1,0 +1,118 @@
+@import '../../../styles/theme';
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background-color: $rr-surface-alt;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif;
+  color: $rr-ink;
+}
+
+.visuallyHiddenLive {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  background-color: $rr-surface;
+  border: 1px solid $rr-border;
+  border-radius: $rr-radius;
+  box-shadow: $rr-shadow;
+}
+
+.headerTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.titleField {
+  flex: 1 1 20rem;
+  min-width: 0;
+
+  // The title field reads as the page heading, not a labelled form field,
+  // when the page is not being edited.
+  :global(label) {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: $rr-ink-secondary;
+  }
+
+  :global(.ms-TextField-field) {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: $rr-teal-900;
+    letter-spacing: -0.01em;
+  }
+}
+
+.headerActions {
+  display: flex;
+  gap: 0.5rem;
+  flex: 0 0 auto;
+}
+
+.headerMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.5rem;
+  padding-top: 0.25rem;
+
+  // Each FieldRenderer field becomes a compact chip in the header row
+  // rather than a plain label/value stack, matching the design's pill-style
+  // metadata row — targeted structurally (direct children), not by class
+  // name, since FieldRenderer's own class names are module-scoped.
+  > div {
+    padding: 0.5rem 0.875rem;
+    background-color: $rr-surface-container-low;
+    border: 1px solid $rr-border;
+    border-radius: $rr-radius-sm;
+  }
+}
+
+.refreshRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: auto;
+  padding: 0 !important;
+  background: none !important;
+  border: none !important;
+}
+
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.relatedGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 1rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
