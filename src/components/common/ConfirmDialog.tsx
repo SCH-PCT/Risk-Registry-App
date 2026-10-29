@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Dialog, DialogType, DialogFooter, PrimaryButton, DefaultButton, IButtonStyles } from '@fluentui/react';
 
+import { BUTTON_CORNER_RADIUS } from '../../styles/buttonCornerRadius';
 import styles from './ConfirmDialog.module.scss';
 
 export interface IConfirmDialogProps {
@@ -31,11 +32,16 @@ export interface IConfirmDialogProps {
  * own Fluent `PrimaryButton`/`DefaultButton` instances — Fluent's `styles`
  * prop takes real style objects, not SCSS class names, so a plain
  * `className` can't reach a button's internal root/hovered/pressed slots.
+ * `TEAL_900`/`TEAL_700` read the host site's theme the same way `_theme.scss`
+ * does, with the literal hex only as the no-theme fallback.
  */
 const INK = '#171c21';
 const INK_SECONDARY = '#40484c';
-const TEAL_900 = '#00586f';
-const TEAL_700 = '#004759';
+const TEAL_900 = 'var(--themePrimary, #00586f)';
+const TEAL_700 = 'var(--themeDarkAlt, #004759)';
+// The site's secondary color, per explicit design feedback — the destructive
+// confirm button's fill, not an actual "danger" red.
+const THEME_SECONDARY = 'var(--themeSecondary, #EC7625)';
 const CRITICAL = '#be123c';
 const CRITICAL_HOVER = '#9f1239';
 const CRITICAL_BORDER = '#fda4af';
@@ -46,13 +52,25 @@ const SURFACE_CONTAINER_LOW = '#f0f4fb';
 function confirmButtonStyles(isDestructive: boolean | undefined): IButtonStyles {
   return isDestructive
     ? {
-        root: { backgroundColor: CRITICAL, borderColor: CRITICAL, borderRadius: 6, height: '2.5rem', padding: '0 2rem' },
-        rootHovered: { backgroundColor: CRITICAL_HOVER, borderColor: CRITICAL_HOVER },
-        rootPressed: { backgroundColor: CRITICAL, borderColor: CRITICAL },
+        root: {
+          backgroundColor: THEME_SECONDARY,
+          borderColor: THEME_SECONDARY,
+          borderRadius: BUTTON_CORNER_RADIUS,
+          height: '2.5rem',
+          padding: '0 2rem'
+        },
+        rootHovered: { backgroundColor: THEME_SECONDARY, borderColor: THEME_SECONDARY },
+        rootPressed: { backgroundColor: THEME_SECONDARY, borderColor: THEME_SECONDARY },
         label: { fontWeight: 600 }
       }
     : {
-        root: { backgroundColor: TEAL_900, borderColor: TEAL_900, borderRadius: 6, height: '2.5rem', padding: '0 2rem' },
+        root: {
+          backgroundColor: TEAL_900,
+          borderColor: TEAL_900,
+          borderRadius: BUTTON_CORNER_RADIUS,
+          height: '2.5rem',
+          padding: '0 2rem'
+        },
         rootHovered: { backgroundColor: TEAL_700, borderColor: TEAL_700 },
         rootPressed: { backgroundColor: TEAL_900, borderColor: TEAL_900 },
         label: { fontWeight: 600 }
@@ -62,12 +80,18 @@ function confirmButtonStyles(isDestructive: boolean | undefined): IButtonStyles 
 function secondaryButtonStyles(isDestructive: boolean | undefined): IButtonStyles {
   return isDestructive
     ? {
-        root: { borderRadius: 6, height: '2.5rem', padding: '0 2rem', borderColor: CRITICAL_BORDER, color: CRITICAL },
+        root: {
+          borderRadius: BUTTON_CORNER_RADIUS,
+          height: '2.5rem',
+          padding: '0 2rem',
+          borderColor: CRITICAL_BORDER,
+          color: CRITICAL
+        },
         rootHovered: { backgroundColor: CRITICAL_BG, borderColor: CRITICAL, color: CRITICAL_HOVER },
         label: { fontWeight: 600 }
       }
     : {
-        root: { borderRadius: 6, height: '2.5rem', padding: '0 2rem', borderColor: BORDER, color: INK },
+        root: { borderRadius: BUTTON_CORNER_RADIUS, height: '2.5rem', padding: '0 2rem', borderColor: BORDER, color: INK },
         rootHovered: { borderColor: TEAL_900, color: TEAL_900, backgroundColor: SURFACE_CONTAINER_LOW },
         label: { fontWeight: 600 }
       };
@@ -77,7 +101,7 @@ function secondaryButtonStyles(isDestructive: boolean | undefined): IButtonStyle
 // so "Stay on This Step" reads as a real, equally-weighted third choice
 // rather than a dismissal link.
 const CANCEL_BUTTON_STYLES: IButtonStyles = {
-  root: { borderRadius: 6, height: '2.5rem', padding: '0 2rem', borderColor: BORDER, color: INK_SECONDARY },
+  root: { borderRadius: BUTTON_CORNER_RADIUS, height: '2.5rem', padding: '0 2rem', borderColor: BORDER, color: INK_SECONDARY },
   rootHovered: { backgroundColor: SURFACE_CONTAINER_LOW, borderColor: BORDER, color: INK },
   label: { fontWeight: 600 }
 };

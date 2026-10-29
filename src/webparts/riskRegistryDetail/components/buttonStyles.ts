@@ -1,5 +1,7 @@
 import { IButtonStyles } from '@fluentui/react';
 
+import { BUTTON_CORNER_RADIUS } from '../../../styles/buttonCornerRadius';
+
 /**
  * Teal pill-button styling matching the design, for this web part's
  * `PrimaryButton`/`DefaultButton` instances.
@@ -9,28 +11,37 @@ import { IButtonStyles } from '@fluentui/react';
  * page CSS cannot reliably beat, so `styles` is the supported override point
  * rather than fighting the cascade.
  */
+// `var(--themePrimary, ...)` etc. mirror `src/styles/_theme.scss`'s
+// `$rr-teal-*` tokens — Fluent's `styles` prop takes real style objects, not
+// SCSS class names, so these can't just `@import` the shared palette file;
+// the CSS custom property still resolves to the host site's actual theme
+// color at runtime, with the literal hex only as the no-theme fallback.
+const THEME_PRIMARY = 'var(--themePrimary, #00586f)';
+const THEME_PRIMARY_HOVER = 'var(--themeDarkAlt, #004759)';
+const THEME_ACCENT = 'var(--themeSecondary, #007897)';
+
 export const PRIMARY_BUTTON_STYLES: IButtonStyles = {
   root: {
-    backgroundColor: '#00586f',
-    borderColor: '#00586f',
-    borderRadius: 4,
+    backgroundColor: THEME_PRIMARY,
+    borderColor: THEME_PRIMARY,
+    borderRadius: BUTTON_CORNER_RADIUS,
     padding: '0 1.25rem',
     height: '2.25rem'
   },
-  rootHovered: { backgroundColor: '#004759', borderColor: '#004759' },
-  rootPressed: { backgroundColor: '#00586f', borderColor: '#00586f' },
+  rootHovered: { backgroundColor: THEME_PRIMARY_HOVER, borderColor: THEME_PRIMARY_HOVER },
+  rootPressed: { backgroundColor: THEME_PRIMARY, borderColor: THEME_PRIMARY },
   rootDisabled: { backgroundColor: '#dee3ea', borderColor: '#dee3ea', color: '#8a9794' },
   label: { fontWeight: 600 }
 };
 
 export const SECONDARY_BUTTON_STYLES: IButtonStyles = {
   root: {
-    borderRadius: 4,
+    borderRadius: BUTTON_CORNER_RADIUS,
     borderColor: '#dee3ea',
     color: '#171c21',
     padding: '0 1.25rem',
     height: '2.25rem'
   },
-  rootHovered: { borderColor: '#007897', color: '#00586f', backgroundColor: '#f0f4fb' },
+  rootHovered: { borderColor: THEME_ACCENT, color: THEME_PRIMARY, backgroundColor: '#f0f4fb' },
   label: { fontWeight: 600 }
 };

@@ -14,4 +14,6 @@ export interface IRiskRegistryListProps {
    * button render without a link rather than guessing a destination.
    */
   readonly detailPageUrl: string | undefined;
+  /** Absolute URL of the host web — used to build each card's Accountable Executive photo via `userphoto.aspx`. */
+  readonly webAbsoluteUrl: string;
 }

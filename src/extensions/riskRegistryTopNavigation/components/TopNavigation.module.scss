@@ -119,6 +119,10 @@ $rr-nav-font-weight: 500;
    * selecting an item does not shift the row by its thickness.
    */
   border-bottom: 3px solid transparent;
+  // Matches the Risk Registry web parts' Step card corner radius (0.5rem) —
+  // hardcoded rather than imported from their shared `_theme.scss`, per this
+  // file's own existing policy of staying decoupled from that palette.
+  border-radius: 0.5rem;
 
   &:hover {
     color: var(--neutralPrimary, #323130);

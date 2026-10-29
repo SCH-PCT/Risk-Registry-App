@@ -5,9 +5,11 @@ import {
   type IPropertyPaneConfiguration,
   PropertyPaneToggle,
   PropertyPaneDropdown,
+  PropertyPaneTextField,
   IPropertyPaneDropdownOption
 } from '@microsoft/sp-property-pane';
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
+import { ThemeProvider, ThemeChangedEventArgs } from '@microsoft/sp-component-base';
 
 import * as strings from 'RiskRegistryDetailWebPartStrings';
 import { RiskRegistryDetail } from './components/RiskRegistryDetail';
@@ -18,6 +20,7 @@ import { ALLOWED_REFRESH_INTERVALS_SECONDS, resolveRefreshIntervalSeconds } from
 import { parseItemIdFromUrl } from '../../utilities/itemIdentifier';
 import { parseSelectedStepFromUrl } from '../../utilities/riskStepParam';
 import { parseIsAdminViewFromUrl } from '../../utilities/adminViewParam';
+import { applySharePointTheme } from '../../utilities/applySharePointTheme';
 import { PnpRiskRegistryRepository } from '../../data/repositories/pnp/PnpRiskRegistryRepository';
 import { PnpRiskActionRepository } from '../../data/repositories/pnp/PnpRiskActionRepository';
 import { PnpRiskActivityRepository } from '../../data/repositories/pnp/PnpRiskActivityRepository';
@@ -33,6 +36,8 @@ export interface IRiskRegistryDetailWebPartProperties {
   enableAutoRefresh: boolean;
   refreshIntervalSeconds: number;
   showLastRefreshed: boolean;
+  /** Destination for the header's "Go Back" button. Blank means "browser back" — see `GoBackButton`. */
+  goBackUrl: string;
 }
 
 /**
@@ -50,6 +55,7 @@ export interface IRiskRegistryDetailWebPartProperties {
  */
 export default class RiskRegistryDetailWebPart extends BaseClientSideWebPart<IRiskRegistryDetailWebPartProperties> {
   private _repositories: IRiskRegistryDetailRepositories | undefined;
+  private _themeProvider: ThemeProvider | undefined;
 
   protected onInit(): Promise<void> {
     this._repositories = {
@@ -62,7 +68,18 @@ export default class RiskRegistryDetailWebPart extends BaseClientSideWebPart<IRi
       people: new PnpPeopleRepository(this.context)
     };
 
+    // SharePoint does not reliably publish `--themePrimary` etc. as global
+    // CSS custom properties on every page/site type — resolved and mirrored
+    // onto `:root` ourselves instead. See `applySharePointTheme`.
+    this._themeProvider = this.context.serviceScope.consume(ThemeProvider.serviceKey);
+    applySharePointTheme(this._themeProvider.tryGetTheme());
+    this._themeProvider.themeChangedEvent.add(this, this._onThemeChanged);
+
     return super.onInit();
+  }
+
+  private _onThemeChanged(args: ThemeChangedEventArgs): void {
+    applySharePointTheme(args.theme);
   }
 
   public render(): void {
@@ -79,6 +96,7 @@ export default class RiskRegistryDetailWebPart extends BaseClientSideWebPart<IRi
       repositories: this._repositories!,
       permissions: new PnpWebPermissionsService(getSp(this.context)),
       listTitle: RISK_REGISTRY_DATA.title,
+      goBackUrl: this.properties.goBackUrl,
       refreshConfiguration: {
         enabled: this.properties.enableAutoRefresh ?? true,
         intervalSeconds: resolveRefreshIntervalSeconds(this.properties.refreshIntervalSeconds)
@@ -96,6 +114,7 @@ export default class RiskRegistryDetailWebPart extends BaseClientSideWebPart<IRi
   }
 
   protected onDispose(): void {
+    this._themeProvider?.themeChangedEvent.remove(this, this._onThemeChanged);
     ReactDom.unmountComponentAtNode(this.domElement);
   }
 
@@ -114,6 +133,15 @@ export default class RiskRegistryDetailWebPart extends BaseClientSideWebPart<IRi
         {
           header: { description: strings.PropertyPaneDescription },
           groups: [
+            {
+              groupName: strings.NavigationGroupName,
+              groupFields: [
+                PropertyPaneTextField('goBackUrl', {
+                  label: strings.GoBackUrlFieldLabel,
+                  description: strings.GoBackUrlFieldDescription
+                })
+              ]
+            },
             {
               groupName: strings.RefreshGroupName,
               groupFields: [

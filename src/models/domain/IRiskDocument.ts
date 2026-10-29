@@ -16,4 +16,11 @@ export interface IRiskDocument {
   readonly serverRelativeUrl: string;
   readonly lastModified?: Date;
   readonly sizeBytes?: number;
+  /**
+   * The uploaded file's `DocumentType` column (see `config/listSchema.ts` and
+   * `IRiskDocumentUploadMetadata`) — e.g. "CAP Document", "Risk Assessment".
+   * `undefined` for a file that predates this column, or that was uploaded
+   * outside this app.
+   */
+  readonly documentType?: string;
 }

@@ -27,16 +27,6 @@
   color: $rr-teal-900;
 }
 
-.badge {
-  padding: 0.125rem 0.625rem;
-  border-radius: 999px;
-  background-color: $rr-surface-container-low;
-  border: 1px solid $rr-border;
-  color: $rr-teal-900;
-  font-size: 0.6875rem;
-  font-weight: 600;
-}
-
 .body {
   display: flex;
   flex-direction: column;
@@ -79,10 +69,64 @@
   font-weight: 600;
 }
 
+.typeChip {
+  flex: 0 0 auto;
+  padding: 0.0625rem 0.5rem;
+  background-color: $rr-teal-100;
+  border-radius: 999px;
+  color: $rr-teal-900;
+  font-size: 0.625rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .modifiedDate {
-  margin-left: auto;
   font-size: 0.6875rem;
   color: $rr-ink-secondary;
+}
+
+// Wraps the modified date (when present) and the rename/delete buttons, so
+// exactly one element claims `margin-left: auto` regardless of whether the
+// date renders — splitting that auto margin across two separate elements
+// would leave an awkward gap between them instead of flushing both to the
+// row's trailing edge together.
+.rowActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.rowIconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  background-color: $rr-surface;
+  border: 1px solid $rr-border;
+  border-radius: $rr-radius;
+  color: $rr-ink-secondary;
+  font-size: 0.8125rem;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background-color: $rr-surface-container-low;
+    border-color: $rr-teal-600;
+    color: $rr-teal-900;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.renameField {
+  flex: 1 1 auto;
+  min-width: 10rem;
 }
 
 .uploadRow {

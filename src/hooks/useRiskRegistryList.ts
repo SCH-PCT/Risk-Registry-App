@@ -6,8 +6,20 @@ import { RiskRegistryError } from '../data/repositories/IRiskRegistryRepository'
 import { IRefreshConfiguration } from '../state/RefreshCoordinator';
 import { getRiskRegistryDataField } from '../config/listSchema';
 import { mapPriorityRatingToTier } from '../utilities/riskPriorityTier';
-import { asNumber, asText } from '../utilities/riskFieldValue';
+import { asNumber, asPerson, asText } from '../utilities/riskFieldValue';
 import { useAutoRefresh } from './useAutoRefresh';
+
+/** A distinct Accountable Executive found in the current snapshot, for the filter dropdown. */
+export interface IExecutiveFilterOption {
+  /** Stable filter key: the person's site user id when known, else their display name. */
+  readonly key: string;
+  readonly displayName: string;
+}
+
+/** Same `id ?? displayName` key `availableExecutives` uses, so a selected option always matches its source items. */
+function executiveFilterKey(id: number | undefined, displayName: string): string {
+  return id !== undefined ? `id:${id}` : `name:${displayName}`;
+}
 
 export type RiskListErrorKind = 'access-denied' | 'invalid-configuration' | 'transient' | 'unknown';
 
@@ -47,8 +59,13 @@ export interface IUseRiskRegistryListResult {
   readonly statusFilter: string | undefined;
   /** Every declared `riskStatus` choice, for the filter dropdown — not only the ones present in the current data. */
   readonly availableStatuses: readonly string[];
+  /** `undefined` means "All executives". Value is an `IExecutiveFilterOption.key`, not a raw display name. */
+  readonly executiveFilter: string | undefined;
+  /** Distinct Accountable Executives present in the current snapshot — unlike `availableStatuses`, there is no fixed choice list for a `User` field, so this is derived from the data itself. */
+  readonly availableExecutives: readonly IExecutiveFilterOption[];
   readonly setSearchText: (value: string) => void;
   readonly setStatusFilter: (value: string | undefined) => void;
+  readonly setExecutiveFilter: (value: string | undefined) => void;
   readonly setPage: (value: number) => void;
   readonly setPageSize: (value: number) => void;
   readonly hasActiveFilters: boolean;
@@ -109,6 +126,7 @@ export function useRiskRegistryList(options: IUseRiskRegistryListOptions): IUseR
 
   const [searchText, setSearchTextState] = React.useState('');
   const [statusFilter, setStatusFilterState] = React.useState<string | undefined>(undefined);
+  const [executiveFilter, setExecutiveFilterState] = React.useState<string | undefined>(undefined);
   const [page, setPageState] = React.useState(1);
   const [pageSize, setPageSizeState] = React.useState(DEFAULT_PAGE_SIZE);
 
@@ -222,14 +240,35 @@ export function useRiskRegistryList(options: IUseRiskRegistryListOptions): IUseR
     };
   }, [items]);
 
+  const availableExecutives = React.useMemo(() => {
+    const byKey = new Map<string, IExecutiveFilterOption>();
+    for (const item of items) {
+      const executive = asPerson(item.fields.accountableExecutive);
+      if (!executive) {
+        continue;
+      }
+      const key = executiveFilterKey(executive.id, executive.displayName);
+      if (!byKey.has(key)) {
+        byKey.set(key, { key, displayName: executive.displayName });
+      }
+    }
+    return Array.from(byKey.values()).sort((a, b) => a.displayName.localeCompare(b.displayName));
+  }, [items]);
+
   const filteredItems = React.useMemo(() => {
     return items.filter((item) => {
       if (statusFilter && item.fields.riskStatus !== statusFilter) {
         return false;
       }
+      if (executiveFilter) {
+        const executive = asPerson(item.fields.accountableExecutive);
+        if (!executive || executiveFilterKey(executive.id, executive.displayName) !== executiveFilter) {
+          return false;
+        }
+      }
       return matchesSearch(item, searchText);
     });
-  }, [items, statusFilter, searchText]);
+  }, [items, statusFilter, executiveFilter, searchText]);
 
   const pageCount = Math.max(1, Math.ceil(filteredItems.length / pageSize));
 
@@ -258,6 +297,11 @@ export function useRiskRegistryList(options: IUseRiskRegistryListOptions): IUseR
     setPageState(1);
   }, []);
 
+  const setExecutiveFilter = React.useCallback((value: string | undefined) => {
+    setExecutiveFilterState(value);
+    setPageState(1);
+  }, []);
+
   const setPageSize = React.useCallback((value: number) => {
     setPageSizeState(value);
     setPageState(1);
@@ -266,6 +310,7 @@ export function useRiskRegistryList(options: IUseRiskRegistryListOptions): IUseR
   const resetFilters = React.useCallback(() => {
     setSearchTextState('');
     setStatusFilterState(undefined);
+    setExecutiveFilterState(undefined);
     setPageState(1);
   }, []);
 
@@ -283,11 +328,14 @@ export function useRiskRegistryList(options: IUseRiskRegistryListOptions): IUseR
     searchText,
     statusFilter,
     availableStatuses,
+    executiveFilter,
+    availableExecutives,
     setSearchText,
     setStatusFilter,
+    setExecutiveFilter,
     setPage: setPageState,
     setPageSize,
-    hasActiveFilters: searchText.trim().length > 0 || statusFilter !== undefined,
+    hasActiveFilters: searchText.trim().length > 0 || statusFilter !== undefined || executiveFilter !== undefined,
     resetFilters,
     refreshNow: refreshState.refreshNow,
     refreshState

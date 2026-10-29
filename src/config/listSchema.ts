@@ -724,6 +724,90 @@ export const RISK_REGISTRY_DATA_FIELDS: Readonly<Record<string, IRiskFieldDefini
     displayName: 'Request for More Information',
     type: 'Note',
     required: false
+  },
+
+  // --- Step 4: per-section duplicate columns ---
+  // SharePoint-generated internal names: each is a genuinely distinct column
+  // (not a second reference to the field above with the matching base name),
+  // created so a value shared by name across several Step 4 sections
+  // (reported as a "multiple occurrence" when those sections' fields were
+  // first mapped) can now be tracked per-section instead of once. The
+  // trailing digit is SharePoint's own disambiguation suffix for a would-be
+  // duplicate 32-char-truncated name — not something this solution chose.
+  // `type`/`choices` are inferred from each one's same-named sibling field
+  // above (same concept, now one column per section) — unverified against
+  // the live site's actual column type, unlike every other field in this
+  // file; flagged for confirmation.
+  accountableVpApproval2: {
+    internalName: 'AccountableVPApproval2',
+    displayName: 'Accountable VP Approval',
+    type: 'Choice',
+    required: false,
+    choices: APPROVED_REQUEST_ADDITIONAL_INFO
+  },
+  accountableVpApproval3: {
+    internalName: 'AccountableVPApproval3',
+    displayName: 'Accountable VP Approval',
+    type: 'Choice',
+    required: false,
+    choices: APPROVED_REQUEST_ADDITIONAL_INFO
+  },
+  accountableVpRiskAssessmentRequestForMoreInfo2: {
+    internalName: 'AccountableVPRiskAssessmentRequ2',
+    displayName: 'Accountable VP Risk Assessment Request for More Information',
+    type: 'Note',
+    required: false
+  },
+  eqocApprovalAcceptance0: {
+    internalName: 'EQOCApprovalAcceptance0',
+    displayName: 'EQOC Approval/Acceptance: (Only applies once VP approves closure)',
+    type: 'Choice',
+    required: false,
+    choices: ['Approved/Accepted', 'Request for Additional Information']
+  },
+  eqocApprovalAcceptance1: {
+    internalName: 'EQOCApprovalAcceptance1',
+    displayName: 'EQOC Approval/Acceptance: (Only applies once VP approves closure)',
+    type: 'Choice',
+    required: false,
+    choices: ['Approved/Accepted', 'Request for Additional Information']
+  },
+  correctionCategorySpecifyOther2: {
+    internalName: 'CorrectionCategory_SpecifyOther2',
+    displayName: 'Correction Category-Specify Other',
+    type: 'Text',
+    required: false,
+    maxLength: 255
+  },
+  eqocMeetingDate2: {
+    internalName: 'EQOCMeetingDate2',
+    displayName: 'EQOC Meeting Date',
+    type: 'DateTime',
+    required: false
+  },
+  eqocMeetingDate3: {
+    internalName: 'EQOCMeetingDate3',
+    displayName: 'EQOC Meeting Date',
+    type: 'DateTime',
+    required: false
+  },
+  eqocRiskAssessmentRequestForMoreInfo2: {
+    internalName: 'EQOCRiskAssessmentRequestforMor2',
+    displayName: 'EQOC Risk Assessment Request for More Information',
+    type: 'Note',
+    required: false
+  },
+  escalationsIssuesBarriers2: {
+    internalName: 'EscalationsIssuesBarriers2',
+    displayName: 'Escalations/Issues/Barriers',
+    type: 'Note',
+    required: false
+  },
+  summaryOfWorkCompleted2: {
+    internalName: 'SummaryofWorkCompleted2',
+    displayName: 'Summary of Work Completed',
+    type: 'Note',
+    required: false
   }
 } as const;
 
@@ -794,11 +878,19 @@ export const RISK_ASSIGNMENTS: IListDefinition = {
   fields: { riskLink: UNRESOLVED }
 };
 
-/** Document library. Folder-per-risk convention is unverified — see SCHEMA-TODO.md #27-31. */
+/**
+ * Document library. Folder-per-risk convention (folders named by the `RiskID`
+ * business field) is unverified — see SCHEMA-TODO.md #27-31 — but `riskId`
+ * and `documentType` below are verified real columns on the uploaded file's
+ * list item, confirmed against the live site. `riskId` stores the parent
+ * `RiskRegistryData` item's own system `ID` (not the `RiskID` business field
+ * the folder is named with) — a second, column-based link to the risk,
+ * independent of the folder convention.
+ */
 export const RISK_REGISTRY_DOCUMENTS: IListDefinition = {
   title: 'RiskRegistryDocuments',
   purpose: 'Documents related to risks, grouped by folders named by RiskId (convention unverified)',
-  fields: { riskLink: UNRESOLVED }
+  fields: { riskId: 'RiskId', documentType: 'DocumentType' }
 };
 
 export const RISK_REGISTRY_LISTS = {

@@ -1,3 +1,21 @@
 {
-  "extends": "./node_modules/@microsoft/spfx-web-build-rig/profiles/default/tsconfig-base.json"
+  "extends": "./node_modules/@microsoft/spfx-web-build-rig/profiles/default/tsconfig-base.json",
+  "compilerOptions": {
+    // The rig's base config (vendored under node_modules, reset on every
+    // install) still pins `target: "es5"` and `moduleResolution: "node10"` —
+    // both deprecated by TypeScript and slated for removal in TS 7.0 (see
+    // https://aka.ms/ts6). Overriding them here, in the project's own
+    // source-controlled tsconfig, is the supported way to diverge from a
+    // shared rig default without forking it.
+    //
+    // `es5` dates from when SPFx still supported IE11; this solution
+    // requires Node >=22 and SPFx 1.23 (see package.json), both long past
+    // that cutoff, so there is no longer a runtime that needs ES5 output.
+    // `node10` (the legacy "node"/"classic" resolution) predates the
+    // `exports`/`imports` fields in package.json; `bundler` is TypeScript's
+    // recommended replacement for apps bundled by webpack/esbuild rather
+    // than run directly by Node.
+    "target": "es2020",
+    "moduleResolution": "bundler"
+  }
 }

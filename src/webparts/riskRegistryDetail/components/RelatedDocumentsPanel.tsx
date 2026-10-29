@@ -1,10 +1,11 @@
 import * as React from 'react';
-import { Icon, Spinner, SpinnerSize, Link } from '@fluentui/react';
+import { Icon, Spinner, SpinnerSize } from '@fluentui/react';
 
 import { IRiskDocumentRepository } from '../../../data/repositories/IRiskDocumentRepository';
 import { IRiskDocument } from '../../../models/domain/IRiskDocument';
 import { IRelatedEntitySectionState } from '../../../models/domain/IRelatedEntitySection';
 import { DocumentUploadControl } from './DocumentUploadControl';
+import { RelatedDocumentRow } from './RelatedDocumentRow';
 import styles from './RelatedDocumentsPanel.module.scss';
 
 export interface IRelatedDocumentsPanelProps {
@@ -18,10 +19,25 @@ export interface IRelatedDocumentsPanelProps {
    * folder — exists yet; treated the same as an empty, loaded list.
    */
   readonly section: IRelatedEntitySectionState<IRiskDocument> | undefined;
+  /**
+   * Only files whose `documentType` matches this value are shown — every
+   * group's panel reads from the same risk folder, so without this filter a
+   * file would show up identically in every group's list rather than just
+   * the one it belongs to.
+   */
+  readonly documentType: string;
   /** Nested at the bottom of this panel when present, per the design moving "Attach Telemetry or Docs" inside "Related Documents". */
-  readonly upload?: { readonly label: string; readonly helpText: string };
+  readonly upload?: { readonly label: string; readonly helpText: string; readonly documentType: string };
   readonly riskBusinessId: number | undefined;
+  /** The risk's own SharePoint system `ID`, forwarded to the nested `DocumentUploadControl`. `undefined` alongside `riskBusinessId` for an unsaved record. */
+  readonly riskItemId: number | undefined;
   readonly documents: IRiskDocumentRepository;
+  /**
+   * Refetches `section` after a successful upload (via the nested
+   * `DocumentUploadControl`), rename, or delete (via each `RelatedDocumentRow`),
+   * so the list above stays accurate without a manual page refresh.
+   */
+  readonly onDocumentsChanged?: () => void;
 }
 
 function formatModifiedDate(value: Date | undefined): string | undefined {
@@ -34,14 +50,24 @@ function formatModifiedDate(value: Date | undefined): string | undefined {
 }
 
 /**
- * The design's "Related Documents" panel — lists every file already in the
- * risk's `RiskRegistryDocuments` folder, with the group's upload control
- * nested at the bottom. Visually matches `TemplateDownloadPanel`'s
- * header/badge/body treatment so the two panels read as a matched pair.
+ * The design's "Related Documents" panel — lists the files already in the
+ * risk's `RiskRegistryDocuments` folder whose `DocumentType` matches this
+ * group's own `documentType`, with the group's upload control nested at the
+ * bottom. Visually matches `TemplateDownloadPanel`'s header/body treatment so
+ * the two panels read as a matched pair.
  */
-export const RelatedDocumentsPanel: React.FC<IRelatedDocumentsPanelProps> = ({ label, section, upload, riskBusinessId, documents }) => {
+export const RelatedDocumentsPanel: React.FC<IRelatedDocumentsPanelProps> = ({
+  label,
+  section,
+  documentType,
+  upload,
+  riskBusinessId,
+  riskItemId,
+  documents,
+  onDocumentsChanged
+}) => {
   const status = section?.status ?? 'loaded';
-  const items = section?.items ?? [];
+  const items = (section?.items ?? []).filter((document) => document.documentType === documentType);
 
   return (
     <div className={styles.panel}>
@@ -50,7 +76,6 @@ export const RelatedDocumentsPanel: React.FC<IRelatedDocumentsPanelProps> = ({ l
           <Icon iconName="DocumentSet" aria-hidden="true" />
           {label}
         </span>
-        <span className={styles.badge}>Document Library</span>
       </div>
 
       <div className={styles.body}>
@@ -73,15 +98,13 @@ export const RelatedDocumentsPanel: React.FC<IRelatedDocumentsPanelProps> = ({ l
         {status === 'loaded' && items.length > 0 && (
           <ul className={styles.list}>
             {items.map((document) => (
-              <li key={document.serverRelativeUrl} className={styles.listItem}>
-                <Icon iconName="Page" className={styles.fileIcon} aria-hidden="true" />
-                <Link href={document.serverRelativeUrl} target="_blank" rel="noopener noreferrer" className={styles.fileLink}>
-                  {document.name}
-                </Link>
-                {formatModifiedDate(document.lastModified) && (
-                  <span className={styles.modifiedDate}>Modified {formatModifiedDate(document.lastModified)}</span>
-                )}
-              </li>
+              <RelatedDocumentRow
+                key={document.serverRelativeUrl}
+                document={document}
+                documents={documents}
+                formattedModifiedDate={formatModifiedDate(document.lastModified)}
+                onChanged={() => onDocumentsChanged?.()}
+              />
             ))}
           </ul>
         )}
@@ -89,7 +112,15 @@ export const RelatedDocumentsPanel: React.FC<IRelatedDocumentsPanelProps> = ({ l
 
       {upload && (
         <div className={styles.uploadRow}>
-          <DocumentUploadControl label={upload.label} helpText={upload.helpText} riskBusinessId={riskBusinessId} documents={documents} />
+          <DocumentUploadControl
+            label={upload.label}
+            helpText={upload.helpText}
+            documentType={upload.documentType}
+            riskBusinessId={riskBusinessId}
+            riskItemId={riskItemId}
+            documents={documents}
+            onUploaded={onDocumentsChanged}
+          />
         </div>
       )}
     </div>

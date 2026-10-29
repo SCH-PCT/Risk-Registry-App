@@ -3,7 +3,7 @@
   "solution": {
     "name": "risk-registry-client-side-solution",
     "id": "cf8a40ca-692a-4fb8-855a-d90189a70dd9",
-    "version": "1.0.0.0",
+    "version": "1.0.2.2",
     "includeClientSideAssets": true,
     "skipFeatureDeployment": false,
     "isDomainIsolated": false,

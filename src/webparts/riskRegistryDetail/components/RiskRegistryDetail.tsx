@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { PrimaryButton, DefaultButton, MessageBar, MessageBarType, Link } from '@fluentui/react';
+import { PrimaryButton, DefaultButton, MessageBar, MessageBarType } from '@fluentui/react';
 
 import { getRiskRegistryDataField, RiskRegistryDataFieldKey } from '../../../config/listSchema';
 import { useRiskRegistryDetail } from '../../../hooks/useRiskRegistryDetail';
@@ -10,17 +10,17 @@ import { ErrorState } from '../../../components/common/ErrorState';
 import { ConfirmDialog } from '../../../components/common/ConfirmDialog';
 import { FormFieldErrorSummary } from '../../../components/common/FormFieldErrorSummary';
 import { PermissionAwareAction } from '../../../components/common/PermissionAwareAction';
+import { GoBackButton } from '../../../components/common/GoBackButton';
 import { RefreshStatus } from '../../../components/feedback/RefreshStatus';
 import { RefreshNowButton } from '../../../components/feedback/RefreshNowButton';
 import { IRiskRegistryItem } from '../../../models/domain/IRiskRegistryItem';
 import { RiskWorkflowStepNumber } from '../../../utilities/riskStepParam';
 import { IRiskRegistryDetailProps } from './IRiskRegistryDetailProps';
-import { DETAIL_STEPS, HEADER_FIELD_KEYS } from './detailSections';
+import { DETAIL_STEPS } from './detailSections';
 import { StepCard } from './StepCard';
 import { WorkflowStepper } from './WorkflowStepper';
 import { StepFooter } from './StepFooter';
 import { FieldRenderer } from './FieldRenderer';
-import { RelatedSection } from './RelatedSection';
 import { ConflictBanner } from './ConflictBanner';
 import { RiskRegistryDetailNew } from './RiskRegistryDetailNew';
 import { PRIMARY_BUTTON_STYLES, SECONDARY_BUTTON_STYLES } from './buttonStyles';
@@ -36,7 +36,8 @@ const RiskRegistryDetailLoaded: React.FC<IRiskRegistryDetailProps & { itemId: nu
   refreshConfiguration,
   showLastRefreshed,
   selectedStep,
-  isAdminView
+  isAdminView,
+  goBackUrl
 }) => {
   const detail = useRiskRegistryDetail({ itemId, listTitle, repositories, permissions, refreshConfiguration });
 
@@ -84,6 +85,9 @@ const RiskRegistryDetailLoaded: React.FC<IRiskRegistryDetailProps & { itemId: nu
       <ErrorState
         kind={detail.errorKind}
         onRetry={detail.errorKind === 'transient' ? detail.refreshNow : undefined}
+        itemId={itemId}
+        showGoBackLink
+        goBackUrl={goBackUrl}
       />
     );
   }
@@ -185,6 +189,8 @@ const RiskRegistryDetailLoaded: React.FC<IRiskRegistryDetailProps & { itemId: nu
       )}
 
       <header className={styles.header}>
+        <GoBackButton goBackUrl={goBackUrl} />
+
         <div className={styles.headerTop}>
           <div className={styles.titleField}>
             <FieldRenderer
@@ -201,6 +207,16 @@ const RiskRegistryDetailLoaded: React.FC<IRiskRegistryDetailProps & { itemId: nu
               // avoid an id collision.
               domId={`${fieldDomId('title')}-header`}
               labelOverride={`Risk ID: ${typeof values.riskId === 'number' ? values.riskId : '—'}`}
+            />
+          </div>
+
+          <div className={styles.headerStatus}>
+            <FieldRenderer
+              fieldKey="riskStatus"
+              mode={mode}
+              value={values.riskStatus}
+              error={detail.edit.fieldErrors.riskStatus}
+              onChange={detail.setFieldValue}
             />
           </div>
 
@@ -235,17 +251,6 @@ const RiskRegistryDetailLoaded: React.FC<IRiskRegistryDetailProps & { itemId: nu
         />
 
         <div className={styles.headerMeta}>
-          {HEADER_FIELD_KEYS.filter((key) => key !== 'title').map((key) => (
-            <FieldRenderer
-              key={key}
-              fieldKey={key}
-              mode={mode}
-              value={values[key]}
-              error={detail.edit.fieldErrors[key]}
-              onChange={detail.setFieldValue}
-            />
-          ))}
-
           <div className={styles.refreshRow}>
             <RefreshStatus
               state={detail.refreshState}
@@ -277,51 +282,15 @@ const RiskRegistryDetailLoaded: React.FC<IRiskRegistryDetailProps & { itemId: nu
             fieldErrors={detail.edit.fieldErrors}
             onFieldChange={detail.setFieldValue}
             riskBusinessId={typeof values.riskId === 'number' ? values.riskId : undefined}
+            riskItemId={itemId}
             documents={repositories.documents}
             people={repositories.people}
             documentsSection={detail.relatedSections.documents}
+            onDocumentsChanged={detail.refreshNow}
             onSectionSubmit={handleSaveClick}
             isSectionSubmitDisabled={!detail.edit.isDirty || !detail.edit.isValid || detail.edit.isSaving}
           />
         ))}
-      </div>
-
-      <div className={styles.relatedGrid}>
-        <RelatedSection
-          title="Actions"
-          state={detail.relatedSections.actions}
-          getKey={(action) => action.id}
-          renderItem={(action) => <span>{action.title}</span>}
-        />
-        <RelatedSection
-          title="Activities"
-          state={detail.relatedSections.activities}
-          getKey={(activity) => activity.id}
-          renderItem={(activity) => <span>{activity.title}</span>}
-        />
-        <RelatedSection
-          title="Updates"
-          state={detail.relatedSections.updates}
-          getKey={(update) => update.id}
-          renderItem={(update) => <span>{update.title}</span>}
-        />
-        <RelatedSection
-          title="Assignments"
-          state={detail.relatedSections.assignments}
-          getKey={(assignment) => assignment.id}
-          renderItem={(assignment) => <span>{assignment.title}</span>}
-        />
-        <RelatedSection
-          title="Documents"
-          state={detail.relatedSections.documents}
-          getKey={(document) => document.serverRelativeUrl}
-          emptyMessage="No documents uploaded for this risk yet."
-          renderItem={(document) => (
-            <Link href={document.serverRelativeUrl} target="_blank" rel="noopener noreferrer">
-              {document.name}
-            </Link>
-          )}
-        />
       </div>
 
       <StepFooter
@@ -401,6 +370,7 @@ export const RiskRegistryDetail: React.FC<IRiskRegistryDetailProps> = (props) =>
         permissions={props.permissions}
         selectedStep={props.selectedStep}
         isAdminView={props.isAdminView}
+        goBackUrl={props.goBackUrl}
         onCreated={(item: IRiskRegistryItem) => {
           if (typeof window !== 'undefined') {
             window.history.replaceState(null, '', buildUrlWithItemId(window.location.href, item.id));
@@ -411,7 +381,7 @@ export const RiskRegistryDetail: React.FC<IRiskRegistryDetailProps> = (props) =>
     );
   }
 
-  return <ErrorState kind="invalid-identifier" />;
+  return <ErrorState kind="invalid-identifier" showGoBackLink goBackUrl={props.goBackUrl} />;
 };
 
 export default RiskRegistryDetail;

@@ -1,5 +1,8 @@
 declare interface IRiskRegistryDetailWebPartStrings {
   PropertyPaneDescription: string;
+  NavigationGroupName: string;
+  GoBackUrlFieldLabel: string;
+  GoBackUrlFieldDescription: string;
   RefreshGroupName: string;
   EnableAutoRefreshFieldLabel: string;
   RefreshIntervalFieldLabel: string;

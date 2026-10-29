@@ -33,8 +33,10 @@
 
 .clickable {
   cursor: pointer;
+  transition: box-shadow 0.15s ease, background-color 0.15s ease;
 
   &:hover {
+    background-color: $rr-surface-container-low;
     box-shadow: $rr-shadow-pop;
   }
 
@@ -126,12 +128,41 @@
   font-weight: 700;
 }
 
+.capStatusBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.625rem;
+  border-radius: 999px;
+  background-color: $rr-teal-100;
+  color: $rr-teal-900;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
 .title {
   margin: 0.125rem 0 0;
   font-size: 1.0625rem;
   font-weight: 700;
   letter-spacing: -0.005em;
   color: $rr-ink;
+}
+
+.titleLink {
+  color: inherit;
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    color: $rr-teal-900;
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $rr-teal-600;
+    outline-offset: 2px;
+  }
 }
 
 .metaRow,
@@ -223,6 +254,13 @@
   justify-content: center;
   font-size: 0.75rem;
   font-weight: 700;
+  overflow: hidden;
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .executiveText {

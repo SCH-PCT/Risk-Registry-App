@@ -1,5 +1,13 @@
 import * as React from 'react';
-import { FocusZone, FocusZoneDirection, IContextualMenuItem, Icon, IconButton, ActionButton } from '@fluentui/react';
+import {
+  FocusZone,
+  FocusZoneDirection,
+  IButtonStyles,
+  IContextualMenuItem,
+  Icon,
+  IconButton,
+  ActionButton
+} from '@fluentui/react';
 
 import * as strings from 'RiskRegistryTopNavigationApplicationCustomizerStrings';
 import { INavigationItem } from '../../../models/domain/INavigationItem';
@@ -7,6 +15,11 @@ import { ITopNavigationProps } from './ITopNavigationProps';
 import { resolveNavigationIcon } from './navigationIcons';
 import { computeOverflow } from './navigationOverflow';
 import styles from './TopNavigation.module.scss';
+
+// Matches the Risk Registry web parts' Step card corner radius (0.5rem =
+// 8px) — hardcoded rather than importing their shared constant, per this
+// file's own existing policy of staying decoupled from that palette.
+const OVERFLOW_BUTTON_STYLES: IButtonStyles = { root: { borderRadius: 8 } };
 
 /**
  * The Risk Registry top navigation bar.
@@ -306,6 +319,7 @@ export const TopNavigation: React.FC<ITopNavigationProps> = (props) => {
                   // An icon-only button carries no accessible name of its own.
                   ariaLabel={`${strings.MoreNavigationItemsLabel} (${overflowIndices.length})`}
                   title={strings.MoreNavigationItemsLabel}
+                  styles={OVERFLOW_BUTTON_STYLES}
                   menuProps={{
                     items: overflowIndices.map((index) => toMenuItem(items[index], activeItemId))
                   }}

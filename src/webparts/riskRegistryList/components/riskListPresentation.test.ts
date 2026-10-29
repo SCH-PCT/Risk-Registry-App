@@ -1,14 +1,4 @@
-import { computePaginationPages, formatRiskCode, initialsFor, statusToneFor } from './riskListPresentation';
-
-describe('formatRiskCode', () => {
-  it('formats the real RiskID business field when set', () => {
-    expect(formatRiskCode(142, 482)).toBe('RR-142');
-  });
-
-  it('falls back to the system item id, never a fabricated code, when RiskID is unset', () => {
-    expect(formatRiskCode(undefined, 482)).toBe('#482');
-  });
-});
+import { computePaginationPages, initialsFor, statusToneFor } from './riskListPresentation';
 
 describe('statusToneFor', () => {
   it('maps a Corrected status to success', () => {

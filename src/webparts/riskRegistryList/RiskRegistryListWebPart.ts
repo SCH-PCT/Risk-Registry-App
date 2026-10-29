@@ -9,6 +9,7 @@ import {
   IPropertyPaneDropdownOption
 } from '@microsoft/sp-property-pane';
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
+import { ThemeProvider, ThemeChangedEventArgs } from '@microsoft/sp-component-base';
 
 import * as strings from 'RiskRegistryListWebPartStrings';
 import { RiskRegistryList } from './components/RiskRegistryList';
@@ -18,6 +19,7 @@ import { ALLOWED_REFRESH_INTERVALS_SECONDS, resolveRefreshIntervalSeconds } from
 import { resolveNavigationUrl } from '../../utilities/urlNormalization';
 import { PnpRiskRegistryListRepository } from '../../data/repositories/pnp/PnpRiskRegistryListRepository';
 import { IRiskRegistryListRepository } from '../../data/repositories/IRiskRegistryListRepository';
+import { applySharePointTheme } from '../../utilities/applySharePointTheme';
 
 export interface IRiskRegistryListWebPartProperties {
   enableAutoRefresh: boolean;
@@ -38,10 +40,23 @@ export interface IRiskRegistryListWebPartProperties {
  */
 export default class RiskRegistryListWebPart extends BaseClientSideWebPart<IRiskRegistryListWebPartProperties> {
   private _repository: IRiskRegistryListRepository | undefined;
+  private _themeProvider: ThemeProvider | undefined;
 
   protected onInit(): Promise<void> {
     this._repository = new PnpRiskRegistryListRepository(this.context);
+
+    // SharePoint does not reliably publish `--themePrimary` etc. as global
+    // CSS custom properties on every page/site type — resolved and mirrored
+    // onto `:root` ourselves instead. See `applySharePointTheme`.
+    this._themeProvider = this.context.serviceScope.consume(ThemeProvider.serviceKey);
+    applySharePointTheme(this._themeProvider.tryGetTheme());
+    this._themeProvider.themeChangedEvent.add(this, this._onThemeChanged);
+
     return super.onInit();
+  }
+
+  private _onThemeChanged(args: ThemeChangedEventArgs): void {
+    applySharePointTheme(args.theme);
   }
 
   public render(): void {
@@ -54,7 +69,8 @@ export default class RiskRegistryListWebPart extends BaseClientSideWebPart<IRisk
         intervalSeconds: resolveRefreshIntervalSeconds(this.properties.refreshIntervalSeconds)
       },
       showLastRefreshed: this.properties.showLastRefreshed ?? true,
-      detailPageUrl: resolveNavigationUrl(this.properties.detailPageUrl, this.context.pageContext.web.absoluteUrl)
+      detailPageUrl: resolveNavigationUrl(this.properties.detailPageUrl, this.context.pageContext.web.absoluteUrl),
+      webAbsoluteUrl: this.context.pageContext.web.absoluteUrl
     };
 
     const element = React.createElement(
@@ -67,6 +83,7 @@ export default class RiskRegistryListWebPart extends BaseClientSideWebPart<IRisk
   }
 
   protected onDispose(): void {
+    this._themeProvider?.themeChangedEvent.remove(this, this._onThemeChanged);
     ReactDom.unmountComponentAtNode(this.domElement);
   }
 

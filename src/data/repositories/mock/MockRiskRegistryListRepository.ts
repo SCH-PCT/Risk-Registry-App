@@ -23,7 +23,8 @@ export function buildSampleRiskRegistryListItems(): IRiskRegistryItem[] {
         hasHarmToPatientVisitorWorkforce: 'Yes',
         anticipatedResourceForCorrection: 'Pharmacy Informatics',
         microSystem: 'CICU',
-        accountableExecutive: { id: 11, displayName: 'Dr. Michael Davies, MD', email: 'michael.davies@example.org' }
+        accountableExecutive: { id: 11, displayName: 'Dr. Michael Davies, MD', email: 'michael.davies@example.org' },
+        evaluatorAssigned: { id: 21, displayName: 'Nina Patel, RN', email: 'nina.patel@example.org' }
       }
     },
     {
@@ -39,7 +40,9 @@ export function buildSampleRiskRegistryListItems(): IRiskRegistryItem[] {
         hasHarmToPatientVisitorWorkforce: 'Unknown',
         anticipatedResourceForCorrection: 'Clinical Effectiveness (CSW)',
         microSystem: 'Periop',
-        accountableExecutive: { id: 12, displayName: 'Dr. Elena Rostova, MD', email: 'elena.rostova@example.org' }
+        accountableExecutive: { id: 12, displayName: 'Dr. Elena Rostova, MD', email: 'elena.rostova@example.org' },
+        evaluatorAssigned: { id: 22, displayName: 'Tom Okafor, RN', email: 'tom.okafor@example.org' },
+        capStatus: 'In Progress'
       }
     },
     {

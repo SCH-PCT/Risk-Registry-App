@@ -14,7 +14,7 @@ import { IRiskDocument } from '../../../models/domain/IRiskDocument';
 import { IRiskActionRepository } from '../IRiskActionRepository';
 import { IRiskActivityRepository } from '../IRiskActivityRepository';
 import { IRiskAssignmentRepository } from '../IRiskAssignmentRepository';
-import { IRiskDocumentRepository } from '../IRiskDocumentRepository';
+import { IRiskDocumentRepository, IRiskDocumentUploadMetadata } from '../IRiskDocumentRepository';
 import { IRiskUpdateRepository } from '../IRiskUpdateRepository';
 
 export class MockRiskActionRepository implements IRiskActionRepository {
@@ -52,26 +52,37 @@ export class MockRiskDocumentRepository implements IRiskDocumentRepository {
     return [...this._items];
   }
 
-  public async uploadForRisk(riskBusinessId: number, file: File): Promise<IRiskDocument> {
+  public async uploadForRisk(riskBusinessId: number, file: File, metadata: IRiskDocumentUploadMetadata): Promise<IRiskDocument> {
     const uploaded: IRiskDocument = {
       name: file.name,
       serverRelativeUrl: `/sites/RiskRegistry/Shared Documents/${riskBusinessId}/${file.name}`,
       lastModified: new Date(),
-      sizeBytes: file.size
+      sizeBytes: file.size,
+      documentType: metadata.documentType
     };
     this._items = [...this._items.filter((item) => item.name !== file.name), uploaded];
     return uploaded;
   }
 
+  public async deleteDocument(serverRelativeUrl: string): Promise<void> {
+    this._items = this._items.filter((item) => item.serverRelativeUrl !== serverRelativeUrl);
+  }
+
+  public async renameDocument(serverRelativeUrl: string, newName: string): Promise<IRiskDocument> {
+    const existing = this._items.find((item) => item.serverRelativeUrl === serverRelativeUrl);
+    if (!existing) {
+      throw new Error(`No document at ${serverRelativeUrl}.`);
+    }
+
+    const folderPath = serverRelativeUrl.slice(0, serverRelativeUrl.lastIndexOf('/'));
+    const renamed: IRiskDocument = { ...existing, name: newName, serverRelativeUrl: `${folderPath}/${newName}` };
+    this._items = this._items.map((item) => (item.serverRelativeUrl === serverRelativeUrl ? renamed : item));
+    return renamed;
+  }
+
   public async getTemplateDownloadUrl(templateFileName: string): Promise<string> {
     return `/sites/RiskRegistry/_layouts/15/download.aspx?SourceUrl=%2Fsites%2FRiskRegistry%2FShared%20Documents%2FTemplates%2F${encodeURIComponent(
       templateFileName
-    )}`;
-  }
-
-  public async getRiskFolderBrowseUrl(riskBusinessId: number): Promise<string> {
-    return `/sites/RiskRegistry/Shared Documents/Forms/AllItems.aspx?id=${encodeURIComponent(
-      `/sites/RiskRegistry/Shared Documents/${riskBusinessId}`
     )}`;
   }
 }

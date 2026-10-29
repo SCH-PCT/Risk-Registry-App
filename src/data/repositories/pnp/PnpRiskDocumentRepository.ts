@@ -24,11 +24,12 @@ import '@pnp/sp/lists';
 import '@pnp/sp/folders';
 import '@pnp/sp/files';
 import '@pnp/sp/files/folder';
+import '@pnp/sp/items';
 
-import { RISK_REGISTRY_DOCUMENTS } from '../../../config/listSchema';
+import { RISK_REGISTRY_DOCUMENTS, requireField } from '../../../config/listSchema';
 import { IRiskDocument } from '../../../models/domain/IRiskDocument';
 import { getSp } from '../../services/spContext';
-import { IRiskDocumentRepository } from '../IRiskDocumentRepository';
+import { IRiskDocumentRepository, IRiskDocumentUploadMetadata } from '../IRiskDocumentRepository';
 import { RiskRegistryError } from '../IRiskRegistryRepository';
 
 interface IFileListingResult {
@@ -36,6 +37,8 @@ interface IFileListingResult {
   readonly ServerRelativeUrl: string;
   readonly TimeLastModified?: string;
   readonly Length?: string | number;
+  /** The file's list item, expanded to read the custom `DocumentType` column — not a file-system property, so it isn't on the file resource itself. */
+  readonly ListItemAllFields?: { readonly DocumentType?: string };
 }
 
 /**
@@ -81,15 +84,18 @@ export class PnpRiskDocumentRepository implements IRiskDocumentRepository {
       const rootFolder = await library.rootFolder();
       const folderPath = `${rootFolder.ServerRelativeUrl}/${riskBusinessId}`;
 
+      const documentTypeField = requireField(RISK_REGISTRY_DOCUMENTS, 'documentType');
       const files = (await this._sp.web
         .getFolderByServerRelativePath(folderPath)
-        .files.select('Name', 'ServerRelativeUrl', 'TimeLastModified', 'Length')()) as IFileListingResult[];
+        .files.select('Name', 'ServerRelativeUrl', 'TimeLastModified', 'Length', `ListItemAllFields/${documentTypeField}`)
+        .expand('ListItemAllFields')()) as IFileListingResult[];
 
       return files.map((file) => ({
         name: file.Name,
         serverRelativeUrl: file.ServerRelativeUrl,
         lastModified: file.TimeLastModified ? new Date(file.TimeLastModified) : undefined,
-        sizeBytes: file.Length !== undefined ? Number(file.Length) : undefined
+        sizeBytes: file.Length !== undefined ? Number(file.Length) : undefined,
+        documentType: file.ListItemAllFields?.DocumentType
       }));
     } catch (error) {
       const status = getHttpStatus(error);
@@ -107,20 +113,34 @@ export class PnpRiskDocumentRepository implements IRiskDocumentRepository {
     }
   }
 
-  public async uploadForRisk(riskBusinessId: number, file: File): Promise<IRiskDocument> {
+  public async uploadForRisk(riskBusinessId: number, file: File, metadata: IRiskDocumentUploadMetadata): Promise<IRiskDocument> {
     try {
       const library = this._sp.web.lists.getByTitle(RISK_REGISTRY_DOCUMENTS.title);
       const rootFolder = await library.rootFolder();
       const folderPath = `${rootFolder.ServerRelativeUrl}/${riskBusinessId}`;
 
-      // Idempotent: creates the folder if it does not exist yet, or returns
-      // the existing one — never errors on an already-present folder, which
-      // is the common case once a risk has uploaded its first file.
-      await this._sp.web.folders.addUsingPath(folderPath, false);
+      // `overwrite: false` (the default) is NOT idempotent for an
+      // already-present folder, despite its name — SharePoint's
+      // `AddUsingPath` throws "A file or folder with the name ... already
+      // exists" in that case, which this previously passed `false` and
+      // caught, surfacing as a generic failed-upload error on every upload
+      // after a risk's first (the only time the folder didn't already
+      // exist). `overwrite: true` is what actually makes folder creation
+      // safe to call unconditionally — it does not touch any files already
+      // inside the folder.
+      await this._sp.web.folders.addUsingPath(folderPath, true);
 
       const uploaded = await this._sp.web
         .getFolderByServerRelativePath(folderPath)
         .files.addUsingPath(file.name, file, { Overwrite: true });
+
+      const riskIdField = requireField(RISK_REGISTRY_DOCUMENTS, 'riskId');
+      const documentTypeField = requireField(RISK_REGISTRY_DOCUMENTS, 'documentType');
+      const uploadedItem = await this._sp.web.getFileByServerRelativePath(uploaded.ServerRelativeUrl).getItem();
+      await uploadedItem.update({
+        [riskIdField]: metadata.riskItemId,
+        [documentTypeField]: metadata.documentType
+      });
 
       return {
         name: uploaded.Name,
@@ -129,7 +149,47 @@ export class PnpRiskDocumentRepository implements IRiskDocumentRepository {
         sizeBytes: uploaded.Length !== undefined ? Number(uploaded.Length) : undefined
       };
     } catch (error) {
+      // The user only ever sees a generic "could not be uploaded" message
+      // (see `DocumentUploadControl.tsx`) — the console is the one sink that
+      // stays on the user's own machine, matching `ErrorBoundary.tsx`'s same
+      // rationale, so the real cause is still diagnosable.
+      console.error('[RiskRegistry] Document upload failed.', error);
       throw toAccessOrTransientError(error, 'The file could not be uploaded.');
+    }
+  }
+
+  public async deleteDocument(serverRelativeUrl: string): Promise<void> {
+    try {
+      await this._sp.web.getFileByServerRelativePath(serverRelativeUrl).delete();
+    } catch (error) {
+      console.error('[RiskRegistry] Document delete failed.', error);
+      throw toAccessOrTransientError(error, 'The file could not be deleted.');
+    }
+  }
+
+  public async renameDocument(serverRelativeUrl: string, newName: string): Promise<IRiskDocument> {
+    try {
+      const folderPath = serverRelativeUrl.slice(0, serverRelativeUrl.lastIndexOf('/'));
+      const destUrl = `${folderPath}/${newName}`;
+
+      // There is no dedicated "rename" REST call — moving a file to a new
+      // path within the same folder is the standard way SharePoint renames
+      // one in place.
+      await this._sp.web.getFileByServerRelativePath(serverRelativeUrl).moveByPath(destUrl, false);
+
+      const renamed = await this._sp.web
+        .getFileByServerRelativePath(destUrl)
+        .select('Name', 'ServerRelativeUrl', 'TimeLastModified', 'Length')();
+
+      return {
+        name: renamed.Name,
+        serverRelativeUrl: renamed.ServerRelativeUrl,
+        lastModified: renamed.TimeLastModified ? new Date(renamed.TimeLastModified) : undefined,
+        sizeBytes: renamed.Length !== undefined ? Number(renamed.Length) : undefined
+      };
+    } catch (error) {
+      console.error('[RiskRegistry] Document rename failed.', error);
+      throw toAccessOrTransientError(error, 'The file could not be renamed.');
     }
   }
 
@@ -144,19 +204,6 @@ export class PnpRiskDocumentRepository implements IRiskDocumentRepository {
       return `${web.ServerRelativeUrl}/_layouts/15/download.aspx?SourceUrl=${encodeURIComponent(templateFilePath)}`;
     } catch (error) {
       throw toAccessOrTransientError(error, 'The template download link could not be resolved.');
-    }
-  }
-
-  public async getRiskFolderBrowseUrl(riskBusinessId: number): Promise<string> {
-    try {
-      const library = this._sp.web.lists.getByTitle(RISK_REGISTRY_DOCUMENTS.title);
-      const { DefaultViewUrl } = await library.select('DefaultViewUrl')();
-      const rootFolder = await library.rootFolder();
-      const folderPath = `${rootFolder.ServerRelativeUrl}/${riskBusinessId}`;
-
-      return `${DefaultViewUrl}?id=${encodeURIComponent(folderPath)}`;
-    } catch (error) {
-      throw toAccessOrTransientError(error, 'The risk documents folder link could not be resolved.');
     }
   }
 }

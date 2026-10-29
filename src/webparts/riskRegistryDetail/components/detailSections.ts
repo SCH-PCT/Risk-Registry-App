@@ -18,10 +18,10 @@
  * Update" is the last of several stacked groups inside Step 4 rather than a
  * separate fifth step.
  *
- * A group's `templateDownload`/`documentUpload`/`reviewLink`/`relatedDocuments`
+ * A group's `templateDownload`/`documentUpload`/`relatedDocuments`
  * are **not** `RiskRegistryData` fields — per explicit confirmation, those design
  * elements belong to document libraries (see `IRiskDocumentRepository`), not
- * to this list's schema: `documentUpload`/`relatedDocuments`/`reviewLink`
+ * to this list's schema: `documentUpload`/`relatedDocuments`
  * read/write the separate `RiskRegistryDocuments` library, keyed by `RiskID`,
  * while `templateDownload` reads a `Templates` folder in the site's own
  * default document library instead — a different library entirely.
@@ -39,29 +39,42 @@ import { RiskRegistryDraftValues } from '../../../models/viewModels/IRiskRegistr
 export interface IFieldGroup {
   readonly id: string;
   readonly title: string;
-  /** Small pill label shown at the top-right of the group header, e.g. "Clinical Triage". `undefined` renders no badge. */
-  readonly badge?: string;
   /** Fluent MDL2 icon name shown at the top-left of the group header. `undefined` renders no icon (matches the design's "Deferment" group, which has none). */
   readonly icon?: string;
   readonly fieldKeys: readonly RiskRegistryDataFieldKey[];
+  /**
+   * Gates whether this entire group renders at all — distinct from
+   * `fieldMetadata.ts`'s per-field `CONDITIONAL_FIELD_RULES`, which only
+   * hide individual fields (leaving an empty group shell behind once every
+   * field inside it happens to be hidden too). Omitted means always
+   * visible.
+   */
+  readonly isVisible?: (values: RiskRegistryDraftValues) => boolean;
   /** Renders the design's "Need [X] Template?" download panel — a `RiskRegistryDocuments` library action, not a field. */
   readonly templateDownload?: { readonly label: string; readonly fileName: string; /** Collapsed-by-default accordion instead of an always-open panel. */ readonly collapsible?: boolean };
-  /** Renders the design's upload dropzone — a `RiskRegistryDocuments` library action, not a field. Rendered standalone unless `relatedDocuments` is also set, in which case it nests at the bottom of that panel instead. */
-  readonly documentUpload?: { readonly label: string; readonly helpText: string };
-  /** Renders the design's "Review [X] before proceeding" link. Shown under the upload control when both are present. */
-  readonly reviewLink?: { readonly label: string };
+  /** Renders the design's upload button — a `RiskRegistryDocuments` library action, not a field. Rendered standalone unless `relatedDocuments` is also set, in which case it nests at the bottom of that panel instead. */
+  readonly documentUpload?: {
+    readonly label: string;
+    readonly helpText: string;
+    /** e.g. "CAP Document" — written to the uploaded file's `DocumentType` column (see `IRiskDocumentUploadMetadata`). */
+    readonly documentType: string;
+  };
   /**
-   * Renders a "Related Documents" panel listing every file already in the
-   * risk's `RiskRegistryDocuments` folder (via the same related-documents
-   * state the page's bottom "Documents" section reads from), with this
-   * group's `documentUpload` control nested at its bottom when present.
+   * Renders a "Related Documents" panel, filtered to files already in the
+   * risk's `RiskRegistryDocuments` folder whose `DocumentType` column equals
+   * `documentType` (via the same related-documents state the page's bottom
+   * "Documents" section reads from), with this group's `documentUpload`
+   * control nested at its bottom when present. `documentType` matches the
+   * value `documentUpload` writes on upload (see `IRiskDocumentUploadMetadata`),
+   * so a file this group uploaded always shows up in this group's own list —
+   * never a different group's, even though every group shares one folder.
    */
-  readonly relatedDocuments?: { readonly label: string };
+  readonly relatedDocuments?: { readonly label: string; readonly documentType: string };
   /**
-   * Where this group's template/related-documents/review-link block renders
-   * relative to its fields. `'top'` (the default) matches every existing
-   * group's current position, before the fields. `'bottom'` moves the whole
-   * block after the fields — used by Step 1's intake group per design.
+   * Where this group's template/related-documents block renders relative to
+   * its fields. `'top'` (the default) matches every existing group's current
+   * position, before the fields. `'bottom'` moves the whole block after the
+   * fields — used by Step 1's intake group per design.
    */
   readonly documentActionsPosition?: 'top' | 'bottom';
   /**
@@ -97,9 +110,6 @@ export interface IDetailStep {
   readonly groups: readonly IFieldGroup[];
 }
 
-/** Shown in the page header, outside any step card. */
-export const HEADER_FIELD_KEYS: readonly RiskRegistryDataFieldKey[] = ['title', 'riskId', 'riskStatus'];
-
 export const DETAIL_STEPS: readonly IDetailStep[] = [
   {
     id: 'intake',
@@ -110,11 +120,11 @@ export const DETAIL_STEPS: readonly IDetailStep[] = [
       {
         id: 'incident-details',
         title: 'Incident Details & SBAR Summary',
-        badge: 'eFeedback Standard',
         icon: 'EditNote',
         // `title` (displayed as "Risk Title") also renders in the page
-        // header for an existing item (see `HEADER_FIELD_KEYS` above) — both
-        // instances edit the same field, per explicit confirmation that
+        // header for an existing item (see `RiskRegistryDetail.tsx`'s
+        // `titleField`) — both instances edit the same field, per explicit
+        // confirmation that
         // "Risk Title" is backed by this one column, not a second one. For
         // a new record, the header's identification step is hidden (see
         // `RiskRegistryDetailNew.tsx`), so this is the only place it shows.
@@ -132,8 +142,8 @@ export const DETAIL_STEPS: readonly IDetailStep[] = [
           'otherResourceForCorrection'
         ],
         templateDownload: { label: 'SBAR', fileName: 'SBAR Template.docx', collapsible: true },
-        relatedDocuments: { label: 'Related Documents' },
-        documentUpload: { label: 'Attach Telemetry or Docs', helpText: 'PDF, DOCX, CSV (Max 25MB)' },
+        relatedDocuments: { label: 'Related Documents', documentType: 'SBAR Document' },
+        documentUpload: { label: 'Attach Telemetry or Docs', helpText: 'PDF, DOCX, CSV (Max 25MB)', documentType: 'SBAR Document' },
         documentActionsPosition: 'bottom'
       }
     ]
@@ -147,7 +157,6 @@ export const DETAIL_STEPS: readonly IDetailStep[] = [
       {
         id: 'cqps-determination',
         title: 'Clinical Evaluation & CQPS Determination',
-        badge: 'Clinical Triage',
         icon: 'CheckList',
         fieldKeys: [
           'evaluatorAssigned',
@@ -164,7 +173,6 @@ export const DETAIL_STEPS: readonly IDetailStep[] = [
       {
         id: 'governance-priority',
         title: 'Governance, Priority & Executive Assignment',
-        badge: 'Executive Council',
         icon: 'Shield',
         fieldKeys: ['riskPriorityRating', 'riskRatingJustification', 'centerRecommendedNextSteps', 'accountableExecutive']
       }
@@ -179,37 +187,52 @@ export const DETAIL_STEPS: readonly IDetailStep[] = [
       {
         id: 'executive-determination',
         title: 'Executive Determination',
-        badge: 'Executive Decision',
         icon: 'ComplianceAudit',
         fieldKeys: ['vpDetermination', 'justificationOfDetermination']
       },
       {
         id: 'departmental-assignment',
         title: 'Departmental Assignment & Leadership',
-        badge: 'Assignment',
         icon: 'ContactCard',
-        fieldKeys: ['assignmentType', 'assignedToDepartment', 'assignedToCommitteeDepartmentRep']
+        fieldKeys: ['assignmentType', 'assignedToCommitteeDepartmentRep']
       },
       {
         id: 'clinical-assessment-scope',
         title: 'Clinical Assessment Scope',
-        badge: 'Quality Assurance',
         icon: 'Shield',
+        // Hidden outright (not just its individual fields — see
+        // `fieldMetadata.ts`'s `CONDITIONAL_FIELD_RULES`, which already hide
+        // every field below unless "Assignement Type" is "Assessment")
+        // unless "Assignement Type" is explicitly "Assessment" — including
+        // while unset, per explicit requirement that neither scope section
+        // shows until a value is chosen.
+        isVisible: (values) => values.assignmentType === 'Assessment',
         fieldKeys: ['assessmentType', 'assessmentTypeSpecifyOther', 'assessmentTypeSpecifyDetails']
       },
       {
         id: 'correction-scope',
         title: 'Correction Scope & Systems',
-        badge: 'Remediation',
         icon: 'Settings',
-        fieldKeys: ['correctionCategory', 'correctionCategorySpecifyOther', 'microSystem', 'mesoSystem']
-      },
-      {
-        id: 'quality-committee',
-        title: 'Quality Committee Governance',
-        badge: 'Oversight',
-        icon: 'Group',
-        fieldKeys: ['qualityCommittee', 'qualityCommitteeSpecifyOther']
+        // Mirrors `clinical-assessment-scope`'s `isVisible` above — visible
+        // only once "Assignement Type" is explicitly "Correction".
+        isVisible: (values) => values.assignmentType === 'Correction',
+        // "Assigned to Department" and the former "Quality Committee
+        // Governance" section's two fields (`qualityCommittee`,
+        // `qualityCommitteeSpecifyOther`) moved here per explicit
+        // confirmation — all three already only show once "Correction
+        // Category" has the one specific value each depends on (see
+        // `CONDITIONAL_FIELD_RULES`), so they belong with the rest of this
+        // section's correction-category-driven fields rather than in their
+        // old, now-deleted groups.
+        fieldKeys: [
+          'correctionCategory',
+          'assignedToDepartment',
+          'correctionCategorySpecifyOther',
+          'microSystem',
+          'mesoSystem',
+          'qualityCommittee',
+          'qualityCommitteeSpecifyOther'
+        ]
       }
     ]
   },
@@ -222,23 +245,22 @@ export const DETAIL_STEPS: readonly IDetailStep[] = [
       {
         id: 'cap-correction',
         title: 'Correction',
-        badge: 'Milestone Track',
         icon: 'Repair',
         fieldKeys: [
           'capCompleteReadyForReview',
           'capReviewStatus',
           'accountableVpCapApproval',
           'capReviewRequestForMoreInfo',
-          'vpCapReviewRequestForMoreInfo'
+          'vpCapReviewRequestForMoreInfo',
+          'correctionCategorySpecifyOther2'
         ],
-        templateDownload: { label: 'CAP', fileName: 'CAP Template.docx' },
-        documentUpload: { label: 'Upload Draft CAP Document', helpText: 'PDF, DOCX, CSV (Max 25MB)' },
-        reviewLink: { label: 'Review CAP' }
+        templateDownload: { label: 'CAP', fileName: 'CAP Template.docx', collapsible: true },
+        relatedDocuments: { label: 'CAP Document', documentType: 'CAP Document' },
+        documentUpload: { label: 'Upload Draft CAP Document', helpText: 'PDF, DOCX, CSV (Max 25MB)', documentType: 'CAP Document' }
       },
       {
         id: 'cap-monthly-update',
         title: 'CAP Monthly Update',
-        badge: 'Monthly Cadence',
         icon: 'History',
         fieldKeys: [
           'capUpdated',
@@ -270,7 +292,6 @@ export const DETAIL_STEPS: readonly IDetailStep[] = [
       {
         id: 'cap-assessment',
         title: 'Assessment',
-        badge: 'QA Audit',
         icon: 'TaskManager',
         fieldKeys: [
           'assessmentAuditPlanCompleteReadyForReview',
@@ -279,13 +300,12 @@ export const DETAIL_STEPS: readonly IDetailStep[] = [
           'assessmentAuditPlanRequestForMoreInfo',
           'vpAssessmentAuditRequestForMoreInfo'
         ],
-        documentUpload: { label: 'Upload Draft Assessment/Audit Plan', helpText: 'PDF, DOCX, XLSX (Max 25MB)' },
-        reviewLink: { label: 'Review Plan' }
+        relatedDocuments: { label: 'Assessment/Audit Plan', documentType: 'Assessment/Audit Plan' },
+        documentUpload: { label: 'Upload Draft Assessment/Audit Plan', helpText: 'PDF, DOCX, XLSX (Max 25MB)', documentType: 'Assessment/Audit Plan' }
       },
       {
         id: 'cap-assessment-monthly-update',
         title: 'Assessment Monthly Updates',
-        badge: 'Tracking & Determination',
         icon: 'BarChart4',
         fieldKeys: [
           'assessmentAuditPlanStatus',
@@ -294,27 +314,30 @@ export const DETAIL_STEPS: readonly IDetailStep[] = [
           'assessmentAuditClosureRequestForMoreInfo',
           'accountableVpRiskAssignment',
           'accountableVpRequestForMoreInfo',
-          'accountableVpDeterminationNote'
+          'accountableVpDeterminationNote',
+          'escalationsIssuesBarriers2',
+          'summaryOfWorkCompleted2'
         ],
         sectionSubmit: { label: 'Submit Monthly Update', isVisible: (values) => values.assessmentAuditPlanStatus === 'In Progress' }
       },
       {
         id: 'deferment',
         title: 'Deferment',
-        badge: 'Governance',
         fieldKeys: [
           'riskAssessmentReviewStatus',
           'riskAssessmentRequestForMoreInfo',
           'accountableVpRiskAssessmentRequestForMoreInfo',
-          'eqocRiskAssessmentRequestForMoreInfo'
+          'eqocRiskAssessmentRequestForMoreInfo',
+          'accountableVpApproval2',
+          'eqocApprovalAcceptance0',
+          'eqocMeetingDate2'
         ],
-        documentUpload: { label: 'Upload Risk Assessment Draft', helpText: 'PDF, DOCX (Max 25MB)' },
-        reviewLink: { label: 'Review File' }
+        relatedDocuments: { label: 'Risk Assessment Draft', documentType: 'Risk Assessment' },
+        documentUpload: { label: 'Upload Risk Assessment Draft', helpText: 'PDF, DOCX (Max 25MB)', documentType: 'Risk Assessment' }
       },
       {
         id: 'semi-annual',
         title: 'Semi-Annual Update',
-        badge: '6-Month Cycle',
         icon: 'Calendar',
         fieldKeys: [
           'wasTheRiskCorrected',
@@ -323,9 +346,19 @@ export const DETAIL_STEPS: readonly IDetailStep[] = [
           'defermentRecommendationJustification',
           'semiAnnualReviewStatus',
           'correctionType',
-          'requestForMoreInformation'
+          'requestForMoreInformation',
+          'accountableVpApproval3',
+          'accountableVpRiskAssessmentRequestForMoreInfo2',
+          'eqocApprovalAcceptance1',
+          'eqocMeetingDate3',
+          'eqocRiskAssessmentRequestForMoreInfo2'
         ],
-        sectionSubmit: { label: 'Submit Semi-Annual Assessment' },
+        relatedDocuments: { label: 'Semi-Annual Update', documentType: 'Semi-Annual Update' },
+        documentUpload: {
+          label: 'Upload Semi-Annual Update Document',
+          helpText: 'PDF, DOCX (Max 25MB)',
+          documentType: 'Semi-Annual Update'
+        },
         derivedApproval: {
           label: 'Correction Approved & Risk Closed',
           description: 'Executive Council formal verification and closure signoff',

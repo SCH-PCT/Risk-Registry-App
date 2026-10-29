@@ -43,7 +43,9 @@ const LIST_FIELD_KEYS: readonly RiskRegistryDataFieldKey[] = [
   'microSystem',
   'mesoSystem',
   'assignedToDepartment',
-  'accountableExecutive'
+  'accountableExecutive',
+  'evaluatorAssigned',
+  'capStatus'
 ];
 
 /** Upper bound on how many items one refresh cycle fetches. See the interface doc for the reasoning. */

@@ -1,5 +1,9 @@
 import * as React from 'react';
-import { MessageBar, MessageBarType, DefaultButton } from '@fluentui/react';
+import { IButtonStyles, MessageBar, MessageBarType, DefaultButton } from '@fluentui/react';
+
+import { BUTTON_CORNER_RADIUS } from '../../styles/buttonCornerRadius';
+
+const BUTTON_STYLES: IButtonStyles = { root: { borderRadius: BUTTON_CORNER_RADIUS } };
 
 /**
  * Catches a render-time crash in one Risk Registry component.
@@ -75,6 +79,7 @@ export class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBo
             text="Try again"
             ariaLabel={`Try loading ${this.props.componentName} again`}
             onClick={this._handleRetry}
+            styles={BUTTON_STYLES}
           />
         }
       >

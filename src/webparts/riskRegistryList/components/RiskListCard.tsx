@@ -5,13 +5,21 @@ import { IRiskRegistryItem } from '../../../models/domain/IRiskRegistryItem';
 import { StatusBadge } from '../../../components/common/StatusBadge';
 import { mapPriorityRatingToTier, RiskSeverityTier } from '../../../utilities/riskPriorityTier';
 import { mapRiskStatusToStep } from '../../../utilities/riskStatusStep';
-import { asNumber, asPerson, asText, formatRiskCode, formatShortDate, initialsFor, statusToneFor } from './riskListPresentation';
+import { asPerson, asText, formatShortDate, initialsFor, statusToneFor } from './riskListPresentation';
 import styles from './RiskListCard.module.scss';
 
 export interface IRiskListCardProps {
   readonly item: IRiskRegistryItem;
   /** `undefined` when no Detail page URL is configured — the card renders without a link. */
   readonly detailUrl: string | undefined;
+  /**
+   * Absolute URL of the host web, used to build the Accountable Executive's
+   * photo via SharePoint's classic `userphoto.aspx` endpoint — chosen over
+   * Microsoft Graph's photo endpoint because this solution requests no Graph
+   * API permissions, and `userphoto.aspx` needs none (no tenant-admin
+   * consent to add).
+   */
+  readonly webAbsoluteUrl: string;
 }
 
 const STEP_LABELS: readonly string[] = ['Intake', 'Evaluation', 'Assignment', 'Action'];
@@ -61,37 +69,54 @@ const StepProgress: React.FC<{ readonly riskStatus: string | undefined }> = ({ r
  * mapping logic. A field that is unset omits the UI piece it would drive
  * rather than showing a placeholder.
  */
-export const RiskListCard: React.FC<IRiskListCardProps> = ({ item, detailUrl }) => {
+export const RiskListCard: React.FC<IRiskListCardProps> = ({ item, detailUrl, webAbsoluteUrl }) => {
   const { fields } = item;
 
-  const riskId = asNumber(fields.riskId);
+  const [photoFailed, setPhotoFailed] = React.useState(false);
+
   const riskTitleText = asText(fields.title);
   const riskStatus = asText(fields.riskStatus);
   const riskPriorityRating = asText(fields.riskPriorityRating);
   const hasHarm = asText(fields.hasHarmToPatientVisitorWorkforce);
+  const capStatus = asText(fields.capStatus);
   const category = asText(fields.anticipatedResourceForCorrection);
   const unit = asText(fields.microSystem) ?? asText(fields.mesoSystem) ?? asText(fields.assignedToDepartment);
   const executive = asPerson(fields.accountableExecutive);
+  const assignedTo = asPerson(fields.evaluatorAssigned);
 
-  const riskCode = formatRiskCode(riskId, item.id);
-  const title = riskTitleText ?? `Risk ${riskCode}`;
+  const title = riskTitleText ?? `Risk ${item.id}`;
   const tier = mapPriorityRatingToTier(riskPriorityRating);
   const hasHarmFlag = hasHarm === 'Yes';
+
+  const executivePhotoUrl =
+    executive?.email && webAbsoluteUrl
+      ? `${webAbsoluteUrl.replace(/\/$/, '')}/_layouts/15/userphoto.aspx?size=M&accountname=${encodeURIComponent(executive.email)}`
+      : undefined;
 
   const metaParts = [category, unit].filter((value): value is string => value !== undefined && value.length > 0);
   const submittedDate = formatShortDate(item.created);
 
-  const isClickable = detailUrl !== undefined;
+  // Routed on the system `id`, matching the Detail web part's own
+  // `?id=` contract (see `itemIdentifier.ts`) — not `riskId`, which is an
+  // optional, non-unique business field.
+  const detailHref = detailUrl ? `${detailUrl}${detailUrl.indexOf('?') === -1 ? '?' : '&'}id=${item.id}` : undefined;
+  const isClickable = detailHref !== undefined;
 
   const handleClick = (): void => {
-    if (detailUrl) {
-      window.location.assign(`${detailUrl}${detailUrl.indexOf('?') === -1 ? '?' : '&'}id=${item.id}`);
+    if (detailHref) {
+      window.location.assign(detailHref);
     }
   };
 
+  // The title's own `<a>` already navigates on click — stop the event from
+  // also reaching the card's `onClick` above, or a modifier-key click
+  // (ctrl/cmd-click to open a new tab, etc.) would be clobbered by the
+  // card's plain same-tab `window.location.assign`.
+  const handleTitleLinkClick = (event: React.MouseEvent): void => event.stopPropagation();
+
   const handleCopyId = (event: React.MouseEvent): void => {
     event.stopPropagation();
-    navigator.clipboard?.writeText(riskCode).catch(() => {
+    navigator.clipboard?.writeText(String(item.id)).catch(() => {
       // Best-effort convenience copy — a failure here has no state anything else depends on.
     });
   };
@@ -116,8 +141,8 @@ export const RiskListCard: React.FC<IRiskListCardProps> = ({ item, detailUrl }) 
       <div className={styles.main}>
         <div className={styles.badgeRow}>
           <span className={styles.riskCode}>
-            {riskCode}
-            <Icon iconName="Copy" aria-hidden="true" className={styles.copyIcon} onClick={handleCopyId} title="Copy risk code" />
+            ID: {item.id}
+            <Icon iconName="Copy" aria-hidden="true" className={styles.copyIcon} onClick={handleCopyId} title="Copy ID" />
           </span>
           {tier && <span className={[styles.tierBadge, TIER_CARD_CLASS[tier.tier]].join(' ')}>{tier.label}</span>}
           {hasHarmFlag && (
@@ -127,9 +152,18 @@ export const RiskListCard: React.FC<IRiskListCardProps> = ({ item, detailUrl }) 
             </span>
           )}
           {riskStatus && <StatusBadge text={riskStatus} tone={statusToneFor(riskStatus)} />}
+          {capStatus && <span className={styles.capStatusBadge}>CAP: {capStatus}</span>}
         </div>
 
-        <h3 className={styles.title}>{title}</h3>
+        <h3 className={styles.title}>
+          {detailHref ? (
+            <a href={detailHref} className={styles.titleLink} onClick={handleTitleLinkClick}>
+              {title}
+            </a>
+          ) : (
+            title
+          )}
+        </h3>
 
         {metaParts.length > 0 && (
           <div className={styles.metaRow}>
@@ -149,6 +183,14 @@ export const RiskListCard: React.FC<IRiskListCardProps> = ({ item, detailUrl }) 
             {submittedDate && <span>{submittedDate}</span>}
           </div>
         )}
+
+        {assignedTo && (
+          <div className={styles.submittedRow}>
+            <span>
+              Assigned to <strong>{assignedTo.displayName}</strong>
+            </span>
+          </div>
+        )}
       </div>
 
       <div className={styles.side}>
@@ -157,7 +199,16 @@ export const RiskListCard: React.FC<IRiskListCardProps> = ({ item, detailUrl }) 
         {executive && (
           <div className={styles.executive}>
             <span className={styles.avatar} aria-hidden="true">
-              {initialsFor(executive.displayName)}
+              {executivePhotoUrl && !photoFailed ? (
+                <img
+                  src={executivePhotoUrl}
+                  alt=""
+                  className={styles.avatarImg}
+                  onError={() => setPhotoFailed(true)}
+                />
+              ) : (
+                initialsFor(executive.displayName)
+              )}
             </span>
             <div className={styles.executiveText}>
               <span className={styles.executiveName}>{executive.displayName}</span>

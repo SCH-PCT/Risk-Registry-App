@@ -11,6 +11,13 @@ export interface IWorkflowStepperProps {
   readonly activeStep: RiskWorkflowStepNumber;
   /** Called with a tile's step number when it is clicked. */
   readonly onStepChange: (step: RiskWorkflowStepNumber) => void;
+  /**
+   * Tiles that render disabled and ignore clicks — used by the "create new"
+   * form (`RiskRegistryDetailNew.tsx`) to block Steps 2-4 until the record
+   * actually exists. `undefined`/omitted means every tile is clickable,
+   * which is always the case for an existing record (view or edit mode).
+   */
+  readonly disabledSteps?: readonly RiskWorkflowStepNumber[];
 }
 
 export interface IStepPill {
@@ -56,7 +63,7 @@ export const WORKFLOW_STEP_PILLS: readonly IStepPill[] = [
  * chip shows the record's actual status text instead of a generic
  * "In progress" label.
  */
-export const WorkflowStepper: React.FC<IWorkflowStepperProps> = ({ riskStatus, activeStep, onStepChange }) => {
+export const WorkflowStepper: React.FC<IWorkflowStepperProps> = ({ riskStatus, activeStep, onStepChange, disabledSteps }) => {
   const handleClick = (stepId: string, stepNumber: RiskWorkflowStepNumber): void => {
     onStepChange(stepNumber);
     document.getElementById(stepDomId(stepId))?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -66,11 +73,13 @@ export const WorkflowStepper: React.FC<IWorkflowStepperProps> = ({ riskStatus, a
     <ul className={styles.stepper}>
       {WORKFLOW_STEP_PILLS.map((pill) => {
         const isActive = pill.stepNumber === activeStep;
+        const isDisabled = disabledSteps?.includes(pill.stepNumber) ?? false;
         return (
           <li key={pill.stepId} className={styles.item}>
             <button
               type="button"
-              className={`${styles.tile} ${isActive ? styles.active : ''}`}
+              className={`${styles.tile} ${isActive ? styles.active : ''} ${isDisabled ? styles.disabled : ''}`}
+              disabled={isDisabled}
               onClick={() => handleClick(pill.stepId, pill.stepNumber)}
             >
               <span className={styles.tileTop}>

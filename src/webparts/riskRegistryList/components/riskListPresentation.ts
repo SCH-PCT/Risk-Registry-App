@@ -29,11 +29,6 @@ export function statusToneFor(riskStatus: string | undefined): StatusTone {
   return STATUS_TONE[riskStatus] ?? 'neutral';
 }
 
-/** Formats the real `riskId` business field as a short code — never fabricates a value when it is unset. */
-export function formatRiskCode(riskId: number | undefined, systemId: number): string {
-  return riskId !== undefined ? `RR-${riskId}` : `#${systemId}`;
-}
-
 export function formatShortDate(date: Date | undefined, locale?: string): string | undefined {
   if (!date) {
     return undefined;

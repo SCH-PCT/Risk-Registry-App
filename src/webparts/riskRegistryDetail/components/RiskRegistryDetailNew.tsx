@@ -9,6 +9,7 @@ import { IRiskRegistryDetailRepositories } from '../../../hooks/useRiskRegistryD
 import { IWebPermissionsService } from '../../../data/services/IWebPermissionsService';
 import { IRiskRegistryItem } from '../../../models/domain/IRiskRegistryItem';
 import { FormFieldErrorSummary } from '../../../components/common/FormFieldErrorSummary';
+import { GoBackButton } from '../../../components/common/GoBackButton';
 import { DETAIL_STEPS } from './detailSections';
 import { StepCard } from './StepCard';
 import { WorkflowStepper } from './WorkflowStepper';
@@ -16,6 +17,9 @@ import { StepFooter } from './StepFooter';
 import { PRIMARY_BUTTON_STYLES } from './buttonStyles';
 import { fieldDomId, focusField } from './fieldDomId';
 import styles from './RiskRegistryDetail.module.scss';
+
+/** Steps that don't exist yet before the item is created — see the comment on `activeStep` below. */
+const DISABLED_STEPS_BEFORE_CREATE: readonly RiskWorkflowStepNumber[] = [2, 3, 4];
 
 export interface IRiskRegistryDetailNewProps {
   readonly listTitle: string;
@@ -25,6 +29,8 @@ export interface IRiskRegistryDetailNewProps {
   readonly selectedStep: RiskWorkflowStepNumber;
   /** Whether every step renders at once (`true`) or only the active tile (`false`) — see `adminViewParam.ts`. */
   readonly isAdminView: boolean;
+  /** Web-part-property-pane-configured "Go Back" destination — see `GoBackButton`. Blank/undefined falls back to browser history. */
+  readonly goBackUrl?: string;
   /** Called once the item has been created — the caller hands off to the normal view/edit flow. */
   readonly onCreated: (item: IRiskRegistryItem) => void;
 }
@@ -53,13 +59,23 @@ export const RiskRegistryDetailNew: React.FC<IRiskRegistryDetailNewProps> = ({
   permissions,
   selectedStep,
   isAdminView,
+  goBackUrl,
   onCreated
 }) => {
   const create = useRiskRegistryCreate({ listTitle, repository: repositories.riskRegistry, people: repositories.people, permissions });
 
   // Shared between `WorkflowStepper` (tile highlight) and `StepFooter`
   // (Previous/Next), matching `RiskRegistryDetail.tsx`'s existing-item flow.
-  const { activeStep, setActiveStep } = useActiveStepUrlSync(selectedStep);
+  //
+  // Steps 2-4 don't exist yet before the item has been created — their
+  // `WorkflowStepper` tiles render disabled and `StepFooter`'s Next Step is
+  // capped at Step 1 below, so creation also always *starts* on Step 1
+  // rather than landing on one of those disabled steps via a deep-linked
+  // `?step=` value. `adminview=true` overrides all of that per explicit
+  // requirement: it shows every step's fields at once regardless of any
+  // other step-related parameter or rule, so none of the create-flow's
+  // step-gating applies while it's on.
+  const { activeStep, setActiveStep } = useActiveStepUrlSync(isAdminView || selectedStep <= 1 ? selectedStep : 1);
 
   const handleCreateClick = (): void => {
     create.create().then((item) => {
@@ -97,6 +113,8 @@ export const RiskRegistryDetailNew: React.FC<IRiskRegistryDetailNewProps> = ({
       )}
 
       <header className={styles.header}>
+        <GoBackButton goBackUrl={goBackUrl} />
+
         <div className={styles.headerTop}>
           <div className={styles.titleField}>
             <h2>New risk record</h2>
@@ -116,6 +134,7 @@ export const RiskRegistryDetailNew: React.FC<IRiskRegistryDetailNewProps> = ({
           riskStatus={typeof create.draftValues.riskStatus === 'string' ? create.draftValues.riskStatus : undefined}
           activeStep={activeStep}
           onStepChange={setActiveStep}
+          disabledSteps={isAdminView ? undefined : DISABLED_STEPS_BEFORE_CREATE}
         />
       </header>
 
@@ -149,6 +168,7 @@ export const RiskRegistryDetailNew: React.FC<IRiskRegistryDetailNewProps> = ({
         onSubmit={handleCreateClick}
         submitLabel={create.isSaving ? 'Submitting…' : 'Submit'}
         isSubmitDisabled={create.isSaving || create.canCreate !== true}
+        maxStep={isAdminView ? undefined : 1}
       />
     </div>
   );

@@ -42,7 +42,8 @@ export const RiskRegistryList: React.FC<IRiskRegistryListProps> = ({
   repository,
   refreshConfiguration,
   showLastRefreshed,
-  detailPageUrl
+  detailPageUrl,
+  webAbsoluteUrl
 }) => {
   const list = useRiskRegistryList({ repository, refreshConfiguration });
 
@@ -92,6 +93,10 @@ export const RiskRegistryList: React.FC<IRiskRegistryListProps> = ({
         </div>
 
         <div className={styles.headerActions}>
+          <div className={styles.refreshGroup}>
+            <RefreshStatus state={list.refreshState} showLastRefreshed={showLastRefreshed} isShowingStaleData={list.isShowingStaleData} />
+            <RefreshNowButton onRefreshNow={list.refreshNow} isRefreshing={list.refreshState.isBackgroundRefreshing} />
+          </div>
           <button type="button" className={styles.secondaryButton} onClick={handleExportCsv}>
             <Icon iconName="Download" aria-hidden="true" />
             Export CSV / Report
@@ -161,6 +166,25 @@ export const RiskRegistryList: React.FC<IRiskRegistryListProps> = ({
             </select>
           </div>
 
+          <div className={styles.statusFilterGroup}>
+            <label htmlFor="risk-list-executive-filter" className={styles.filterLabel}>
+              Accountable Executive:
+            </label>
+            <select
+              id="risk-list-executive-filter"
+              className={styles.statusSelect}
+              value={list.executiveFilter ?? ''}
+              onChange={(event) => list.setExecutiveFilter(event.target.value || undefined)}
+            >
+              <option value="">All Executives</option>
+              {list.availableExecutives.map((executive) => (
+                <option key={executive.key} value={executive.key}>
+                  {executive.displayName}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div className={styles.searchGroup}>
             <SearchBox
               placeholder="Search by Risk ID or title…"
@@ -179,6 +203,17 @@ export const RiskRegistryList: React.FC<IRiskRegistryListProps> = ({
               <span className={styles.filterChip}>
                 Status: {list.statusFilter}
                 <Icon iconName="Cancel" aria-hidden="true" onClick={() => list.setStatusFilter(undefined)} className={styles.chipClose} />
+              </span>
+            )}
+            {list.executiveFilter && (
+              <span className={styles.filterChip}>
+                Accountable Executive: {list.availableExecutives.find((executive) => executive.key === list.executiveFilter)?.displayName}
+                <Icon
+                  iconName="Cancel"
+                  aria-hidden="true"
+                  onClick={() => list.setExecutiveFilter(undefined)}
+                  className={styles.chipClose}
+                />
               </span>
             )}
             {list.searchText && (
@@ -216,7 +251,7 @@ export const RiskRegistryList: React.FC<IRiskRegistryListProps> = ({
       ) : (
         <div className={styles.cardList}>
           {list.pageItems.map((item) => (
-            <RiskListCard key={item.id} item={item} detailUrl={detailPageUrl} />
+            <RiskListCard key={item.id} item={item} detailUrl={detailPageUrl} webAbsoluteUrl={webAbsoluteUrl} />
           ))}
         </div>
       )}
@@ -283,11 +318,6 @@ export const RiskRegistryList: React.FC<IRiskRegistryListProps> = ({
             <Icon iconName="ChevronRight" aria-hidden="true" />
           </button>
         </div>
-      </div>
-
-      <div className={styles.footerRow}>
-        <RefreshStatus state={list.refreshState} showLastRefreshed={showLastRefreshed} isShowingStaleData={list.isShowingStaleData} />
-        <RefreshNowButton onRefreshNow={list.refreshNow} isRefreshing={list.refreshState.isBackgroundRefreshing} />
       </div>
     </div>
   );

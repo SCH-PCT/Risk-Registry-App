@@ -1,0 +1,24 @@
+.row {
+  display: flex;
+  justify-content: center;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-weight: 600;
+  // Reads the host site's theme (see `src/styles/_theme.scss`'s matching
+  // `$rr-teal-900`/`$rr-teal-700` tokens), with the literal hex as the
+  // no-theme fallback — a plain `common/` component, so it reads the live
+  // CSS custom property directly instead of importing one feature's SCSS.
+  color: var(--themePrimary, #00586f);
+
+  &:hover {
+    color: var(--themeDarkAlt, #004759);
+  }
+}
+
+.icon {
+  font-size: 0.75rem;
+}

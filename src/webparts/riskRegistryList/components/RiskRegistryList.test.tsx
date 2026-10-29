@@ -26,6 +26,7 @@ function buildProps(overrides: Partial<IRiskRegistryListProps> = {}): IRiskRegis
     refreshConfiguration: { enabled: false, intervalSeconds: 60 },
     showLastRefreshed: true,
     detailPageUrl: undefined,
+    webAbsoluteUrl: 'https://contoso.sharepoint.com/sites/RiskRegistry',
     ...overrides
   };
 }

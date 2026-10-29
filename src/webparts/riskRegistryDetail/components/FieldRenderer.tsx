@@ -49,6 +49,9 @@ export interface IFieldRendererProps {
   readonly people?: IPeopleRepository;
 }
 
+/** Dropdown key for a Choice field's explicit "clear this field" option — never collides with a real choice's `${choice}-${index}` key. */
+const CHOICE_BLANK_OPTION_KEY = '__blank__';
+
 function isPerson(value: RiskRegistryFieldValue): value is IRiskRegistryPerson {
   return typeof value === 'object' && value !== null && 'displayName' in value;
 }
@@ -156,19 +159,29 @@ export const FieldRenderer: React.FC<IFieldRendererProps> = ({
           />
         );
       case 'Choice': {
-        const options: IDropdownOption[] = (definition.choices ?? []).map((choice, index) => ({
-          key: `${choice}-${index}`,
-          text: choice,
-          data: choice
-        }));
-        const selectedKey = options.find((option) => option.data === value)?.key;
+        // A real, selectable option rather than just a placeholder — the
+        // only way to clear a Choice field back to blank once some value has
+        // been picked (Fluent's placeholder only ever shows for an
+        // already-blank field; it is not itself a selectable item).
+        const blankOption: IDropdownOption = { key: CHOICE_BLANK_OPTION_KEY, text: '(Not Set)', data: undefined, title: '(Not Set)' };
+        const options: IDropdownOption[] = [
+          blankOption,
+          ...(definition.choices ?? []).map((choice, index) => ({
+            key: `${choice}-${index}`,
+            text: choice,
+            // Built-in tooltip on hover, so a long option (either in the open
+            // list or truncated once selected) is still readable in full.
+            title: choice,
+            data: choice
+          }))
+        ];
+        const selectedKey = options.find((option) => option.data === value)?.key ?? CHOICE_BLANK_OPTION_KEY;
         return (
           <Dropdown
             id={domId}
             selectedKey={selectedKey}
-            placeholder="(Not set)"
             options={options}
-            onChange={(_, option) => handleChange(option ? (option.data as string) : undefined)}
+            onChange={(_, option) => handleChange(option ? (option.data as string | undefined) : undefined)}
             errorMessage={error}
           />
         );

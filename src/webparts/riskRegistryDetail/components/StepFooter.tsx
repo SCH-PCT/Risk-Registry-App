@@ -13,6 +13,13 @@ export interface IStepFooterProps {
   readonly onSubmit: () => void;
   readonly submitLabel: string;
   readonly isSubmitDisabled: boolean;
+  /**
+   * Caps "Next Step" at this step number instead of the usual last step —
+   * used by the "create new" form to keep Previous/Next from reaching
+   * Steps 2-4 the same way its disabled `WorkflowStepper` tiles do (see
+   * `RiskRegistryDetailNew.tsx`). Omitted means the normal 1-4 range.
+   */
+  readonly maxStep?: RiskWorkflowStepNumber;
 }
 
 const MIN_STEP: RiskWorkflowStepNumber = 1;
@@ -35,7 +42,8 @@ export const StepFooter: React.FC<IStepFooterProps> = ({
   onStepChange,
   onSubmit,
   submitLabel,
-  isSubmitDisabled
+  isSubmitDisabled,
+  maxStep = MAX_STEP
 }) => {
   const goToStep = (step: RiskWorkflowStepNumber): void => {
     onStepChange(step);
@@ -70,7 +78,7 @@ export const StepFooter: React.FC<IStepFooterProps> = ({
         <button
           type="button"
           className={styles.nextButton}
-          disabled={activeStep >= MAX_STEP}
+          disabled={activeStep >= maxStep}
           onClick={() => goToStep((activeStep + 1) as RiskWorkflowStepNumber)}
         >
           Next Step

@@ -4,6 +4,7 @@ import {
   PlaceholderContent,
   PlaceholderName
 } from '@microsoft/sp-application-base';
+import { ThemeProvider, ThemeChangedEventArgs } from '@microsoft/sp-component-base';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
@@ -14,6 +15,7 @@ import { INavigationConfiguration, ISiteBranding } from '../../models/domain/INa
 import { ErrorBoundary } from '../../components/common/ErrorBoundary';
 import { ITopNavigationProps } from './components/ITopNavigationProps';
 import { TopNavigation } from './components/TopNavigation';
+import { applySharePointTheme } from '../../utilities/applySharePointTheme';
 
 const LOG_SOURCE: string = 'RiskRegistryTopNavigationApplicationCustomizer';
 
@@ -45,6 +47,7 @@ export default class RiskRegistryTopNavigationApplicationCustomizer extends Base
   private _topPlaceholder?: PlaceholderContent;
   private _service?: NavigationService;
   private _branding?: ISiteBranding;
+  private _themeProvider?: ThemeProvider;
 
   private _configuration: INavigationConfiguration = { items: [], diagnostics: [] };
   private _activeItemId?: number;
@@ -69,6 +72,15 @@ export default class RiskRegistryTopNavigationApplicationCustomizer extends Base
     // leak a subscription per page.
     this.context.application.navigatedEvent.add(this, this._onNavigated);
 
+    // SharePoint does not reliably publish `--themePrimary` etc. as global CSS
+    // custom properties on every page/site type — resolved and mirrored onto
+    // `:root` ourselves instead. See `applySharePointTheme`. Runs here (rather
+    // than only in the web parts) so the top nav itself, which renders on
+    // every page including ones without either web part, is themed too.
+    this._themeProvider = this.context.serviceScope.consume(ThemeProvider.serviceKey);
+    applySharePointTheme(this._themeProvider.tryGetTheme());
+    this._themeProvider.themeChangedEvent.add(this, this._onThemeChanged);
+
     this._branding = buildSiteBranding(this.context.pageContext.web);
     this._service = new NavigationService(new PnpNavigationRepository(this.context));
 
@@ -90,6 +102,10 @@ export default class RiskRegistryTopNavigationApplicationCustomizer extends Base
    * cache has expired. Navigating around the site therefore costs nothing until the
    * TTL lapses.
    */
+  private _onThemeChanged = (args: ThemeChangedEventArgs): void => {
+    applySharePointTheme(args.theme);
+  };
+
   private _onNavigated = (): void => {
     if (this._isTornDown) {
       return;
@@ -271,6 +287,7 @@ export default class RiskRegistryTopNavigationApplicationCustomizer extends Base
     this._isTornDown = true;
 
     this.context.application.navigatedEvent.remove(this, this._onNavigated);
+    this._themeProvider?.themeChangedEvent.remove(this, this._onThemeChanged);
 
     if (this._topPlaceholder?.domElement) {
       ReactDOM.unmountComponentAtNode(this._topPlaceholder.domElement);

@@ -5,7 +5,7 @@ import { IRiskDocumentRepository } from '../../../data/repositories/IRiskDocumen
 import styles from './TemplateDownloadPanel.module.scss';
 
 export interface ITemplateDownloadPanelProps {
-  /** e.g. "SBAR" — used for the heading ("Need SBAR Template?") and badge text. */
+  /** e.g. "SBAR" — used for the heading ("Need SBAR Template?"). */
   readonly label: string;
   /** Exact file name in the documents library's `Templates` folder, e.g. "SBAR Template.docx". */
   readonly fileName: string;
@@ -59,13 +59,12 @@ export const TemplateDownloadPanel: React.FC<ITemplateDownloadPanelProps> = ({ l
             onClick={() => setIsExpanded((previous) => !previous)}
             aria-expanded={isExpanded}
           >
-            <Icon iconName={isExpanded ? 'ChevronUp' : 'ChevronDown'} className={styles.chevron} aria-hidden="true" />
             {heading}
+            <Icon iconName={isExpanded ? 'ChevronUp' : 'ChevronDown'} className={styles.chevron} aria-hidden="true" />
           </button>
         ) : (
           heading
         )}
-        <span className={styles.badge}>Clinical Standard</span>
       </div>
 
       {isExpanded && (

@@ -9,6 +9,12 @@
 
 .lastUpdated {
   white-space: nowrap;
+  // ~25% lighter than the surrounding `.refreshStatus` text color, per
+  // design feedback. The flat hex is the fallback for browsers without
+  // `color-mix` support; `color-mix` itself tracks whatever the live Fluent
+  // theme variable actually resolves to, rather than assuming its default.
+  color: #888685;
+  color: color-mix(in srgb, var(--neutralSecondary, #605e5c) 75%, white 25%);
 }
 
 .backgroundIndicator {
@@ -76,4 +82,14 @@
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
+
+  // Fluent's `DefaultButton` wraps its children (our icon + label) in its
+  // own inner flex container (`.ms-Button-flexContainer`), not the button
+  // root this class is applied to — so the `gap` above never actually
+  // reaches the icon/text pair. Scoped to this button via the ancestor
+  // `.refreshButton` class, same `:global()` technique as
+  // `FieldRenderer.module.scss`.
+  :global(.ms-Button-flexContainer) {
+    gap: 0.375rem;
+  }
 }

@@ -103,7 +103,7 @@
   padding: 0.5rem 1.125rem;
   background-color: $rr-surface;
   border: 1px solid $rr-teal-600;
-  border-radius: $rr-radius-sm;
+  border-radius: $rr-radius;
   color: $rr-teal-900;
   font-size: 0.8125rem;
   font-weight: 600;
@@ -148,17 +148,6 @@
   font-size: 1.0625rem;
   font-weight: 700;
   color: $rr-teal-900;
-}
-
-.groupBadge {
-  flex: 0 0 auto;
-  padding: 0.25rem 0.75rem;
-  border-radius: 999px;
-  background-color: $rr-surface-container;
-  border: 1px solid $rr-border;
-  color: $rr-ink-secondary;
-  font-size: 0.75rem;
-  font-weight: 600;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -68,6 +68,20 @@ const EMPTY_EDIT_STATE: IRiskRegistryEditState = {
   isSaving: false
 };
 
+/** A fresh editing state baselined on `source` — used both to enter edit mode and to stay in it (re-baselined) after a successful save. */
+function buildEditingState(source: IRiskRegistryItem): IRiskRegistryEditState {
+  return {
+    isEditing: true,
+    baselineValues: { ...source.fields },
+    baselineEtag: source.etag,
+    draftValues: { ...source.fields },
+    fieldErrors: {},
+    isDirty: false,
+    isValid: true,
+    isSaving: false
+  };
+}
+
 function shallowValuesEqual(a: RiskRegistryFieldValue, b: RiskRegistryFieldValue): boolean {
   if (a === b) {
     return true;
@@ -217,16 +231,30 @@ export function useRiskRegistryDetail(options: IUseRiskRegistryDetailOptions): I
   itemRef.current = item;
 
   const runRefreshCycle = React.useCallback(async (): Promise<void> => {
+    const primaryPromise = repositories.riskRegistry.getById(itemId);
+
+    // Documents are keyed by the risk's `RiskID` business field, which is
+    // only known once `primaryPromise` resolves — unlike the other four
+    // related sections below, keyed by the already-known system `itemId`.
+    // Chained off `primaryPromise` itself (rather than read from `itemRef`
+    // up front, alongside the other four) so the very first load — before
+    // any previous cycle has cached an item for `itemRef` to hold — doesn't
+    // spuriously resolve to an empty list: that previously made the
+    // documents panel appear empty until a second refresh cycle (manual or
+    // on the next auto-refresh tick) ran with `itemRef` finally populated.
+    const documentsPromise = primaryPromise.then(
+      (freshItem) => loadRelatedSection(() => repositories.documents.getForRisk(freshItem.fields.riskId as number | undefined)),
+      () => loadRelatedSection(() => repositories.documents.getForRisk(itemRef.current?.fields.riskId as number | undefined))
+    );
+
     const [primaryResult, actionsResult, activitiesResult, updatesResult, assignmentsResult, documentsResult] =
       await Promise.allSettled([
-        repositories.riskRegistry.getById(itemId),
+        primaryPromise,
         loadRelatedSection(() => repositories.actions.getForRisk(itemId)),
         loadRelatedSection(() => repositories.activities.getForRisk(itemId)),
         loadRelatedSection(() => repositories.updates.getForRisk(itemId)),
         loadRelatedSection(() => repositories.assignments.getForRisk(itemId)),
-        loadRelatedSection(() =>
-          repositories.documents.getForRisk(itemRef.current?.fields.riskId as number | undefined)
-        )
+        documentsPromise
       ]);
 
     if (!isMountedRef.current) {
@@ -324,18 +352,23 @@ export function useRiskRegistryDetail(options: IUseRiskRegistryDetailOptions): I
     if (!item || canEdit !== true) {
       return;
     }
-    setEdit({
-      isEditing: true,
-      baselineValues: { ...item.fields },
-      baselineEtag: item.etag,
-      draftValues: { ...item.fields },
-      fieldErrors: {},
-      isDirty: false,
-      isValid: true,
-      isSaving: false
-    });
+    setEdit(buildEditingState(item));
     setSaveError(undefined);
   }, [canEdit, item]);
+
+  // The detail page defaults to edit mode rather than making every visit
+  // start read-only and require an explicit "Edit" click — but only once
+  // per item, and only once permission is confirmed: an "Edit" permission
+  // check that resolves `false` must never flash into an edit form, and a
+  // user who deliberately clicks "Cancel" out of edit mode must stay in
+  // read mode rather than being bounced straight back into it.
+  const autoStartedEditForItemIdRef = React.useRef<number | undefined>(undefined);
+  React.useEffect(() => {
+    if (item && canEdit === true && !edit.isEditing && autoStartedEditForItemIdRef.current !== itemId) {
+      autoStartedEditForItemIdRef.current = itemId;
+      startEdit();
+    }
+  }, [item, canEdit, edit.isEditing, itemId, startEdit]);
 
   const cancelEdit = React.useCallback(() => {
     setEdit(EMPTY_EDIT_STATE);
@@ -418,8 +451,10 @@ export function useRiskRegistryDetail(options: IUseRiskRegistryDetailOptions): I
       const changedFields = computeChangedFields(current.baselineValues, correctedDraftValues);
       if (Object.keys(changedFields).length === 0) {
         // Nothing changed; treat as a no-op success rather than a round trip.
+        // Stay in edit mode, per the save/submit flow never dropping the user
+        // back to read mode on its own — only an explicit Cancel does that.
         if (isMountedRef.current) {
-          setEdit(EMPTY_EDIT_STATE);
+          setEdit(buildEditingState(item));
         }
         return true;
       }
@@ -432,7 +467,9 @@ export function useRiskRegistryDetail(options: IUseRiskRegistryDetailOptions): I
       }
 
       setItem(savedItem);
-      setEdit(EMPTY_EDIT_STATE);
+      // Stay in edit mode, re-baselined on the just-saved item, rather than
+      // dropping back to read mode — only an explicit Cancel does that.
+      setEdit(buildEditingState(savedItem));
       setConflict(undefined);
       // "After a successful save ... refresh immediately and restart the
       // normal interval" — `update()` already re-read the item above; this

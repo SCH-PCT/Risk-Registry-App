@@ -10,10 +10,17 @@
  * than forking a second copy that could drift from the first.
  */
 
-$rr-teal-900: #00586f; // primary — deep clinical teal
-$rr-teal-700: #004759; // primary hover/pressed
-$rr-teal-600: #007897; // accent / focus ring / borders-on-hover
-$rr-teal-100: #e0f2f7; // primary tint — chip & badge backgrounds
+// Each reads the host site's actual theme (SharePoint publishes its palette
+// as CSS custom properties — e.g. `--themePrimary` — on the page at runtime,
+// the same mechanism `RefreshStatus.module.scss` already relies on for
+// `--neutralSecondary`), so this solution's primary color always matches
+// whichever theme the site is set to rather than a fixed brand color. The
+// literal hex is only the fallback for contexts with no SharePoint theme
+// present (e.g. local workbench, non-SharePoint hosts).
+$rr-teal-900: var(--themePrimary, #00586f); // primary — site theme color
+$rr-teal-700: var(--themeDarkAlt, #004759); // primary hover/pressed
+$rr-teal-600: var(--themeSecondary, #007897); // accent / focus ring / borders-on-hover
+$rr-teal-100: var(--themeLighter, #e0f2f7); // primary tint — chip & badge backgrounds
 
 $rr-amber-700: #9b4500;
 $rr-amber-100: #fdecdc;

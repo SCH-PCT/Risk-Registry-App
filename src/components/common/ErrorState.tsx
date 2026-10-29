@@ -1,7 +1,11 @@
 import * as React from 'react';
-import { MessageBar, MessageBarType, DefaultButton, PrimaryButton } from '@fluentui/react';
+import { IButtonStyles, MessageBar, MessageBarType, DefaultButton, PrimaryButton } from '@fluentui/react';
 
+import { BUTTON_CORNER_RADIUS } from '../../styles/buttonCornerRadius';
+import { GoBackButton } from './GoBackButton';
 import styles from './ErrorState.module.scss';
+
+const BUTTON_STYLES: IButtonStyles = { root: { borderRadius: BUTTON_CORNER_RADIUS } };
 
 /**
  * The handled error states a Risk Registry web part can be in.
@@ -29,7 +33,25 @@ export interface IErrorStateProps {
   readonly kind: DetailErrorKind;
   readonly onRetry?: () => void;
   readonly onReload?: () => void;
+  /**
+   * The query-string item id that failed to resolve, interpolated into the
+   * `not-found` message ("Risk ID {itemId} could not be found…"). Ignored
+   * for every other `kind`.
+   */
+  readonly itemId?: number;
+  /**
+   * Shows a `GoBackButton` above the message when `true` — opt-in because
+   * the List web part (which also renders `ErrorState`) has no "back"
+   * destination; only the Detail web part's per-record error states do.
+   */
+  readonly showGoBackLink?: boolean;
+  /** Forwarded to `GoBackButton` — see its own doc comment for the fallback-to-history behavior. */
+  readonly goBackUrl?: string;
 }
+
+const TITLES: Readonly<Partial<Record<DetailErrorKind, string>>> = {
+  'not-found': 'Risk Record Not Found'
+};
 
 const MESSAGES: Readonly<Record<DetailErrorKind, string>> = {
   'invalid-identifier': 'This link does not point at a valid risk record.',
@@ -40,6 +62,13 @@ const MESSAGES: Readonly<Record<DetailErrorKind, string>> = {
   unknown: 'Something went wrong loading this risk record.'
 };
 
+function messageFor(kind: DetailErrorKind, itemId: number | undefined): string {
+  if (kind === 'not-found' && itemId !== undefined) {
+    return `Risk ID ${itemId} could not be found. If you believe this record exists, clear your browser cache and try again. If the issue persists, contact the Risk Registry management team.`;
+  }
+  return MESSAGES[kind];
+}
+
 /**
  * One of the handled failure states for the Detail web part.
  *
@@ -48,19 +77,24 @@ const MESSAGES: Readonly<Record<DetailErrorKind, string>> = {
  * retry could plausibly fix (`transient`); the others gate on something that
  * won't change by trying again a moment later.
  */
-export const ErrorState: React.FC<IErrorStateProps> = ({ kind, onRetry, onReload }) => {
+export const ErrorState: React.FC<IErrorStateProps> = ({ kind, onRetry, onReload, itemId, showGoBackLink, goBackUrl }) => {
   const canRetry = kind === 'transient' && !!onRetry;
+  const title = TITLES[kind];
 
   return (
-    <MessageBar messageBarType={MessageBarType.error} role="alert">
-      <div>{MESSAGES[kind]}</div>
-      {(canRetry || onReload) && (
-        <div className={styles.actions}>
-          {canRetry && <PrimaryButton text="Try again" onClick={onRetry} />}
-          {onReload && <DefaultButton text="Reload" onClick={onReload} />}
-        </div>
-      )}
-    </MessageBar>
+    <>
+      {showGoBackLink && <GoBackButton goBackUrl={goBackUrl} />}
+      <MessageBar messageBarType={MessageBarType.error} role="alert">
+        {title && <div className={styles.title}>{title}</div>}
+        <div>{messageFor(kind, itemId)}</div>
+        {(canRetry || onReload) && (
+          <div className={styles.actions}>
+            {canRetry && <PrimaryButton text="Try again" onClick={onRetry} styles={BUTTON_STYLES} />}
+            {onReload && <DefaultButton text="Reload" onClick={onReload} styles={BUTTON_STYLES} />}
+          </div>
+        )}
+      </MessageBar>
+    </>
   );
 };
 
