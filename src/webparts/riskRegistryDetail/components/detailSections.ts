@@ -151,8 +151,8 @@ export const DETAIL_STEPS: readonly IDetailStep[] = [
   {
     id: 'clinical-evaluation',
     stepNumber: 2,
-    title: 'Clinical Evaluation & Risk Assessment',
-    description: 'Review clinical harm, assign severity tier, and determine CQPS priority.',
+    title: 'Evaluation & Risk Assessment',
+    description: 'Evaluate risk, assign severity tier and CQPS determination.',
     groups: [
       {
         id: 'cqps-determination',
@@ -167,7 +167,11 @@ export const DETAIL_STEPS: readonly IDetailStep[] = [
           'primarySeverityCategorySpecifyOther',
           'apparentSystemFailureMode',
           'evaluatorAssessmentAndRecommendation',
-          'cqpsDetermination'
+          'cqpsDetermination',
+          // Hidden unless "CQPS Determination" is "Rejected" (see
+          // `fieldMetadata.ts`'s `CONDITIONAL_FIELD_RULES`) — placed directly
+          // after it per explicit requirement.
+          'cqpsDeterminationRejectionReason'
         ]
       },
       {
@@ -198,7 +202,7 @@ export const DETAIL_STEPS: readonly IDetailStep[] = [
       },
       {
         id: 'clinical-assessment-scope',
-        title: 'Clinical Assessment Scope',
+        title: 'Assessment/Correction Details',
         icon: 'Shield',
         // Hidden outright (not just its individual fields — see
         // `fieldMetadata.ts`'s `CONDITIONAL_FIELD_RULES`, which already hide

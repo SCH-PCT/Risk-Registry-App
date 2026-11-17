@@ -115,7 +115,7 @@ export const APP_TOP_NAVIGATION: IListDefinition = {
 // ---------------------------------------------------------------------------
 
 /** The SharePoint field shapes this catalog knows how to render and validate. */
-export type RiskFieldType = 'Text' | 'Note' | 'Choice' | 'Boolean' | 'Number' | 'User' | 'DateTime';
+export type RiskFieldType = 'Text' | 'Note' | 'Choice' | 'MultiChoice' | 'Boolean' | 'Number' | 'User' | 'DateTime';
 
 /**
  * One field's verified shape, rich enough to drive both the generic field
@@ -184,8 +184,8 @@ export const RISK_REGISTRY_DATA_FIELDS: Readonly<Record<string, IRiskFieldDefini
   },
   anticipatedResourceForCorrection: {
     internalName: 'AnticipatedResourceforCorrection',
-    displayName: 'Anticipated Resource for Correction',
-    type: 'Choice',
+    displayName: 'Anticipated Resource(s) for Correction',
+    type: 'MultiChoice',
     required: false,
     choices: [
       'Clinical Analytics',
@@ -225,14 +225,14 @@ export const RISK_REGISTRY_DATA_FIELDS: Readonly<Record<string, IRiskFieldDefini
   detailsOfHarm: { internalName: 'DetailsofHarm', displayName: 'Details of Harm', type: 'Note', required: false },
   evaluatorAssigned: {
     internalName: 'EvaluatorAssigned',
-    displayName: 'Evaluator Assigned (staff picker)',
+    displayName: 'Evaluator Assigned',
     type: 'User',
     required: false
   },
   riskIdentificationMethods: {
     internalName: 'RiskIdentificationMethods',
     displayName: 'Risk Identification Methods',
-    type: 'Choice',
+    type: 'MultiChoice',
     required: false,
     choices: [
       'CQPS Rounding/Observation',
@@ -287,14 +287,27 @@ export const RISK_REGISTRY_DATA_FIELDS: Readonly<Record<string, IRiskFieldDefini
   },
   cqpsDetermination: {
     internalName: 'CQPSDetermination',
-    displayName: 'CQPS Determination (Drop Down)',
+    displayName: 'CQPS Determination',
     type: 'Choice',
     required: false,
     choices: ['Approved', 'Rejected']
   },
+  // NOT YET VERIFIED against the live site — unlike every other field in this
+  // catalog. This column does not exist on `RiskRegistryData` today; it must
+  // be created there (Multiple lines of text) with this internal name before
+  // this field can actually read/write real data. Added per explicit
+  // request: a hidden rejection-reason note shown only once "CQPS
+  // Determination" is "Rejected" (see `fieldMetadata.ts`'s
+  // `CONDITIONAL_FIELD_RULES`).
+  cqpsDeterminationRejectionReason: {
+    internalName: 'CQPSDeterminationRejectionReason',
+    displayName: 'CQPS Determination Rejection Reason',
+    type: 'Note',
+    required: false
+  },
   riskPriorityRating: {
     internalName: 'RiskPriorityRating',
-    displayName: 'Risk Priority Rating (Drop Down)',
+    displayName: 'Risk Priority Rating',
     type: 'Choice',
     required: false,
     choices: [
@@ -312,7 +325,7 @@ export const RISK_REGISTRY_DATA_FIELDS: Readonly<Record<string, IRiskFieldDefini
   },
   centerRecommendedNextSteps: {
     internalName: 'CentrRecommendedNextSteps',
-    displayName: 'Centr Recommended Next Steps',
+    displayName: 'Center Recommended Next Steps',
     type: 'Note',
     required: false
   },
@@ -352,7 +365,7 @@ export const RISK_REGISTRY_DATA_FIELDS: Readonly<Record<string, IRiskFieldDefini
   },
   assignmentType: {
     internalName: 'AssignementType',
-    displayName: 'Assignement Type',
+    displayName: 'Assignment Type',
     type: 'Choice',
     required: false,
     choices: ['Assessment', 'Correction']
@@ -401,7 +414,7 @@ export const RISK_REGISTRY_DATA_FIELDS: Readonly<Record<string, IRiskFieldDefini
   },
   microSystem: {
     internalName: 'MicroSystem',
-    displayName: 'Micro System',
+    displayName: 'Microsystem',
     type: 'Choice',
     required: false,
     choices: [
@@ -418,7 +431,7 @@ export const RISK_REGISTRY_DATA_FIELDS: Readonly<Record<string, IRiskFieldDefini
   },
   mesoSystem: {
     internalName: 'MesoSystem',
-    displayName: 'Meso System',
+    displayName: 'Mesosystem',
     type: 'Choice',
     required: false,
     choices: ['Heart Center', 'Cancer and Blood Disorder Center', 'Neurosciences']

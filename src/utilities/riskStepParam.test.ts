@@ -32,11 +32,11 @@ describe('parseSelectedStep', () => {
 
 describe('parseSelectedStepFromUrl', () => {
   it('reads the step parameter from a full URL', () => {
-    expect(parseSelectedStepFromUrl('https://contoso.sharepoint.com/sites/x/RiskDetail.aspx?id=482&step=3')).toBe(3);
+    expect(parseSelectedStepFromUrl('https://contoso.sharepoint.com/sites/x/RiskDetail.aspx?itemId=482&step=3')).toBe(3);
   });
 
   it('defaults to step 1 when the parameter is absent', () => {
-    expect(parseSelectedStepFromUrl('https://contoso.sharepoint.com/sites/x/RiskDetail.aspx?id=482')).toBe(1);
+    expect(parseSelectedStepFromUrl('https://contoso.sharepoint.com/sites/x/RiskDetail.aspx?itemId=482')).toBe(1);
   });
 
   it('defaults to step 1 for a malformed URL', () => {
@@ -46,12 +46,12 @@ describe('parseSelectedStepFromUrl', () => {
 
 describe('buildUrlWithStep', () => {
   it('sets the step parameter, preserving every other query parameter', () => {
-    const url = buildUrlWithStep('https://contoso.sharepoint.com/sites/x/RiskDetail.aspx?id=482&step=1', 3);
-    expect(url).toBe('https://contoso.sharepoint.com/sites/x/RiskDetail.aspx?id=482&step=3');
+    const url = buildUrlWithStep('https://contoso.sharepoint.com/sites/x/RiskDetail.aspx?itemId=482&step=1', 3);
+    expect(url).toBe('https://contoso.sharepoint.com/sites/x/RiskDetail.aspx?itemId=482&step=3');
   });
 
   it('adds the step parameter when it was absent', () => {
-    const url = buildUrlWithStep('https://contoso.sharepoint.com/sites/x/RiskDetail.aspx?id=482', 2);
-    expect(url).toBe('https://contoso.sharepoint.com/sites/x/RiskDetail.aspx?id=482&step=2');
+    const url = buildUrlWithStep('https://contoso.sharepoint.com/sites/x/RiskDetail.aspx?itemId=482', 2);
+    expect(url).toBe('https://contoso.sharepoint.com/sites/x/RiskDetail.aspx?itemId=482&step=2');
   });
 });

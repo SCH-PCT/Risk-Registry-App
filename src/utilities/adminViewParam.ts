@@ -1,7 +1,7 @@
 /**
  * Reads the `adminview` query-string parameter that controls whether the
  * Detail web part shows every step at once or only the active one, e.g.
- * `...?id=482&step=3&adminview=true`.
+ * `...?itemId=482&step=3&adminview=true`.
  *
  * Like `step` (see `riskStepParam.ts`), a missing or malformed value has no
  * invalid-page failure mode — it only changes how many steps render, never

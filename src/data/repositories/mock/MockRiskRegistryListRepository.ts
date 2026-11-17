@@ -21,7 +21,7 @@ export function buildSampleRiskRegistryListItems(): IRiskRegistryItem[] {
         riskStatus: 'Evaluation',
         riskPriorityRating: '4 - Noncompliance with safety risks that have reached the patient/visitor/workforce and caused harm (temporary or permanent)',
         hasHarmToPatientVisitorWorkforce: 'Yes',
-        anticipatedResourceForCorrection: 'Pharmacy Informatics',
+        anticipatedResourceForCorrection: ['Pharmacy Informatics'],
         microSystem: 'CICU',
         accountableExecutive: { id: 11, displayName: 'Dr. Michael Davies, MD', email: 'michael.davies@example.org' },
         evaluatorAssigned: { id: 21, displayName: 'Nina Patel, RN', email: 'nina.patel@example.org' }
@@ -38,7 +38,7 @@ export function buildSampleRiskRegistryListItems(): IRiskRegistryItem[] {
         riskStatus: 'Assigned In-Progress',
         riskPriorityRating: '4 - Noncompliance with safety risks that have reached the patient/visitor/workforce and caused harm (temporary or permanent)',
         hasHarmToPatientVisitorWorkforce: 'Unknown',
-        anticipatedResourceForCorrection: 'Clinical Effectiveness (CSW)',
+        anticipatedResourceForCorrection: ['Clinical Effectiveness (CSW)'],
         microSystem: 'Periop',
         accountableExecutive: { id: 12, displayName: 'Dr. Elena Rostova, MD', email: 'elena.rostova@example.org' },
         evaluatorAssigned: { id: 22, displayName: 'Tom Okafor, RN', email: 'tom.okafor@example.org' },
@@ -56,7 +56,7 @@ export function buildSampleRiskRegistryListItems(): IRiskRegistryItem[] {
         riskStatus: 'Pending Assignment',
         riskPriorityRating: '4 - Noncompliance with safety risks that have reached the patient/visitor/workforce and caused harm (temporary or permanent)',
         hasHarmToPatientVisitorWorkforce: 'Yes',
-        anticipatedResourceForCorrection: 'Pharmacy Informatics',
+        anticipatedResourceForCorrection: ['Pharmacy Informatics'],
         microSystem: 'PICU',
         accountableExecutive: { id: 11, displayName: 'Dr. Michael Davies, MD', email: 'michael.davies@example.org' }
       }
@@ -72,7 +72,7 @@ export function buildSampleRiskRegistryListItems(): IRiskRegistryItem[] {
         riskStatus: 'New',
         riskPriorityRating: '3 - Noncomliance with safety risks that have reached the patient/visitor/workforce',
         hasHarmToPatientVisitorWorkforce: 'No',
-        anticipatedResourceForCorrection: 'Clinical Analytics',
+        anticipatedResourceForCorrection: ['Clinical Analytics'],
         microSystem: 'ED',
         accountableExecutive: { id: 13, displayName: 'Dr. Aris Thorne, MD', email: 'aris.thorne@example.org' }
       }
@@ -88,7 +88,7 @@ export function buildSampleRiskRegistryListItems(): IRiskRegistryItem[] {
         riskStatus: 'Assigned In-Progress',
         riskPriorityRating: '2 - Noncompliance with safety risks',
         hasHarmToPatientVisitorWorkforce: 'Yes',
-        anticipatedResourceForCorrection: 'Clinical Analytics',
+        anticipatedResourceForCorrection: ['Clinical Analytics'],
         microSystem: 'CICU',
         accountableExecutive: { id: 11, displayName: 'Dr. Michael Davies, MD', email: 'michael.davies@example.org' }
       }

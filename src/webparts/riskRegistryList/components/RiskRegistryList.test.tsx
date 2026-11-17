@@ -8,9 +8,9 @@ import { MockRiskRegistryListRepository } from '../../../data/repositories/mock/
 import { RiskRegistryError } from '../../../data/repositories/IRiskRegistryRepository';
 import { IRiskRegistryItem } from '../../../models/domain/IRiskRegistryItem';
 
-/** Seven distinct items so the default 5-per-page setting produces two pages without touching the page-size control. */
-function buildSevenItemsForPagination(): IRiskRegistryItem[] {
-  return Array.from({ length: 7 }, (_, index) => ({
+/** 15 distinct items — more than the smallest page-size option (10), so selecting it still produces two pages. */
+function buildSampleItemsForPagination(): IRiskRegistryItem[] {
+  return Array.from({ length: 15 }, (_, index) => ({
     id: 100 + index,
     etag: '',
     fields: { riskId: 100 + index, title: `Pagination Sample Risk ${index + 1}`, riskStatus: 'New' }
@@ -104,21 +104,38 @@ describe('RiskRegistryList — status filter', () => {
 
 describe('RiskRegistryList — pagination', () => {
   it('moves to the next page and updates the visible cards', async () => {
-    const repository = new MockRiskRegistryListRepository({ items: buildSevenItemsForPagination() });
+    const repository = new MockRiskRegistryListRepository({ items: buildSampleItemsForPagination() });
     render(<RiskRegistryList {...buildProps({ repository })} />);
 
-    // Default page size is 5, so page 1 of 7 items shows the first 5.
     await screen.findByText('Pagination Sample Risk 1');
-    expect(screen.getByText('Pagination Sample Risk 5')).toBeInTheDocument();
-    expect(screen.queryByText('Pagination Sample Risk 6')).not.toBeInTheDocument();
+
+    // Smallest available page size (10), so page 1 of 15 items shows the first 10.
+    fireEvent.change(screen.getByLabelText('Rows per page:'), { target: { value: '10' } });
+
+    await waitFor(() => {
+      expect(screen.getByText('Pagination Sample Risk 10')).toBeInTheDocument();
+      expect(screen.queryByText('Pagination Sample Risk 11')).not.toBeInTheDocument();
+    });
 
     fireEvent.click(screen.getByRole('button', { name: /^Next$/i }));
 
     await waitFor(() => {
-      expect(screen.getByText('Pagination Sample Risk 6')).toBeInTheDocument();
-      expect(screen.getByText('Pagination Sample Risk 7')).toBeInTheDocument();
+      expect(screen.getByText('Pagination Sample Risk 11')).toBeInTheDocument();
+      expect(screen.getByText('Pagination Sample Risk 15')).toBeInTheDocument();
       expect(screen.queryByText('Pagination Sample Risk 1')).not.toBeInTheDocument();
     });
+  });
+
+  it('defaults to showing 50 rows per page', async () => {
+    const repository = new MockRiskRegistryListRepository({ items: buildSampleItemsForPagination() });
+    render(<RiskRegistryList {...buildProps({ repository })} />);
+
+    await screen.findByText('Pagination Sample Risk 1');
+
+    // All 15 sample items fit on the default page size (50) — no second page.
+    expect(screen.getByText('Pagination Sample Risk 15')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Next$/i })).toBeDisabled();
+    expect(screen.getByLabelText('Rows per page:')).toHaveValue('50');
   });
 });
 

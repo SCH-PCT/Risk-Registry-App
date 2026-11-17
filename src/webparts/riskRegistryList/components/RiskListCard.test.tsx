@@ -33,7 +33,7 @@ describe('RiskListCard — title link', () => {
     const link = screen.getByRole('link', { name: TITLE });
     expect(link).toHaveAttribute(
       'href',
-      'https://contoso.sharepoint.com/sites/RiskRegistry/SitePages/Risk-Registry-Detail.aspx?id=482'
+      'https://contoso.sharepoint.com/sites/RiskRegistry/SitePages/Risk-Registry-Detail.aspx?itemId=482'
     );
   });
 
@@ -49,7 +49,7 @@ describe('RiskListCard — title link', () => {
     const link = screen.getByRole('link', { name: TITLE });
     expect(link).toHaveAttribute(
       'href',
-      'https://contoso.sharepoint.com/sites/RiskRegistry/SitePages/Risk-Registry-Detail.aspx?source=list&id=482'
+      'https://contoso.sharepoint.com/sites/RiskRegistry/SitePages/Risk-Registry-Detail.aspx?source=list&itemId=482'
     );
   });
 

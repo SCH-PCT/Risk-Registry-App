@@ -58,7 +58,7 @@ function buildProps(overrides: Partial<IRiskRegistryDetailProps> = {}): IRiskReg
   };
 }
 
-/** The clickable `WorkflowStepper` tile containing `label` (e.g. "2. Clinical Evaluation"). */
+/** The clickable `WorkflowStepper` tile containing `label` (e.g. "2. Evaluation"). */
 function stepTileButton(label: string): HTMLButtonElement {
   const button = screen.getByText(label).closest('button');
   expect(button).toBeInstanceOf(HTMLButtonElement);
@@ -201,30 +201,21 @@ describe('RiskRegistryDetail — blank identifier (create new item)', () => {
     expect(screen.queryByText('Related Documents')).not.toBeInTheDocument();
   });
 
-  it('defaults Risk Status to "New" on the Intake & SBAR step', async () => {
-    render(<RiskRegistryDetail {...buildProps({ identifierResult: parseItemId(undefined) })} />);
-
-    await screen.findByRole('button', { name: 'Create' });
-
-    // The selected step tile shows the record's current status.
-    expect(screen.getByText('New')).toBeInTheDocument();
-  });
-
   it('disables the Step 2-4 WorkflowStepper tiles and caps "Next Step" at Step 1 while creating a new item', async () => {
     render(<RiskRegistryDetail {...buildProps({ identifierResult: parseItemId(undefined) })} />);
 
     await screen.findByRole('button', { name: 'Create' });
 
     expect(stepTileButton('1. Intake & SBAR')).not.toBeDisabled();
-    expect(stepTileButton('2. Clinical Evaluation')).toBeDisabled();
+    expect(stepTileButton('2. Evaluation')).toBeDisabled();
     expect(stepTileButton('3. VP Assignment')).toBeDisabled();
     expect(stepTileButton('4. Action & CAP')).toBeDisabled();
     expect(screen.getByRole('button', { name: /Next Step/i })).toBeDisabled();
 
     // Clicking a disabled tile does not change which step is shown.
-    fireEvent.click(stepTileButton('2. Clinical Evaluation'));
+    fireEvent.click(stepTileButton('2. Evaluation'));
     expect(screen.getByText('Step 1: Intake & SBAR Documentation')).toBeInTheDocument();
-    expect(screen.queryByText(/Step 2: Clinical Evaluation/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Step 2: Evaluation/)).not.toBeInTheDocument();
   });
 
   it('starts creation on Step 1 even when the page URL requests a later step', async () => {
@@ -254,7 +245,7 @@ describe('RiskRegistryDetail — blank identifier (create new item)', () => {
     fireEvent.click(createButton);
 
     await screen.findByRole('button', { name: /^Save$/ });
-    expect(stepTileButton('2. Clinical Evaluation')).not.toBeDisabled();
+    expect(stepTileButton('2. Evaluation')).not.toBeDisabled();
     expect(stepTileButton('3. VP Assignment')).not.toBeDisabled();
     expect(stepTileButton('4. Action & CAP')).not.toBeDisabled();
     expect(screen.getByRole('button', { name: /Next Step/i })).not.toBeDisabled();
@@ -270,13 +261,13 @@ describe('RiskRegistryDetail — blank identifier (create new item)', () => {
     await screen.findByRole('button', { name: 'Create' });
 
     expect(stepTileButton('1. Intake & SBAR')).not.toBeDisabled();
-    expect(stepTileButton('2. Clinical Evaluation')).not.toBeDisabled();
+    expect(stepTileButton('2. Evaluation')).not.toBeDisabled();
     expect(stepTileButton('3. VP Assignment')).not.toBeDisabled();
     expect(stepTileButton('4. Action & CAP')).not.toBeDisabled();
     expect(screen.getByRole('button', { name: /Next Step/i })).not.toBeDisabled();
 
     expect(screen.getByText('Step 1: Intake & SBAR Documentation')).toBeInTheDocument();
-    expect(screen.getByText(/Step 2: Clinical Evaluation/)).toBeInTheDocument();
+    expect(screen.getByText(/Step 2: Evaluation/)).toBeInTheDocument();
     expect(screen.getByText(/Step 3: VP Assignment/)).toBeInTheDocument();
     expect(screen.getByText(/Step 4: Action/)).toBeInTheDocument();
   });
@@ -332,7 +323,7 @@ describe('RiskRegistryDetail — default edit mode', () => {
     expect(await screen.findByRole('button', { name: /^Save$/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument();
-    expect(stepTileButton('2. Clinical Evaluation')).not.toBeDisabled();
+    expect(stepTileButton('2. Evaluation')).not.toBeDisabled();
     expect(stepTileButton('3. VP Assignment')).not.toBeDisabled();
     expect(stepTileButton('4. Action & CAP')).not.toBeDisabled();
   });
@@ -346,7 +337,7 @@ describe('RiskRegistryDetail — default edit mode', () => {
     // Unlike the "create new" form, an existing record's step tiles are
     // never disabled — regardless of edit/read mode, every step already
     // exists.
-    expect(stepTileButton('2. Clinical Evaluation')).not.toBeDisabled();
+    expect(stepTileButton('2. Evaluation')).not.toBeDisabled();
     expect(stepTileButton('3. VP Assignment')).not.toBeDisabled();
     expect(stepTileButton('4. Action & CAP')).not.toBeDisabled();
   });
@@ -405,14 +396,17 @@ describe('RiskRegistryDetail — unsaved changes', () => {
     expect(titleInput(container).value).toBe('Changed title');
   });
 
-  it('cancels without a prompt when nothing has changed', async () => {
+  it('cancels without a prompt when nothing has changed, staying in edit mode', async () => {
     render(<RiskRegistryDetail {...buildProps()} />);
 
     await screen.findByRole('button', { name: /^Save$/ });
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
 
     expect(screen.queryByText(/discard them/i)).not.toBeInTheDocument();
-    expect(await screen.findByRole('button', { name: 'Edit' })).toBeInTheDocument();
+    // Per the "always edit mode" requirement, Cancel never drops the form
+    // back to read-only — "Cancel"/"Save" remain, not a read-only "Edit" button.
+    expect(await screen.findByRole('button', { name: 'Cancel' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument();
   });
 });
 
@@ -576,9 +570,16 @@ describe('RiskRegistryDetail — conditional required field', () => {
 
     await screen.findByRole('button', { name: /^Save$/ });
 
+    // Multi-select, unlike every other Choice dropdown on the page — picking
+    // an option does not auto-close the panel (jsdom's lack of a real
+    // viewport makes Fluent render this dropdown's options as a `Panel`
+    // rather than a `Callout`), so it is closed explicitly via its own
+    // "Close" button before continuing, or the rest of the page stays
+    // hidden from the accessibility tree behind the still-open panel.
     const anticipatedDropdown = container.querySelector(`#${fieldDomId('anticipatedResourceForCorrection')}`) as HTMLElement;
     fireEvent.click(anticipatedDropdown);
     fireEvent.click(await screen.findByText('Other'));
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
 
     const saveButton = await screen.findByRole('button', { name: /^Save$/ });
     await waitFor(() => expect(saveButton).toBeDisabled());
@@ -589,6 +590,36 @@ describe('RiskRegistryDetail — conditional required field', () => {
     fireEvent.change(otherInput, { target: { value: 'New vendor contract' } });
 
     await waitFor(() => expect(saveButton).not.toBeDisabled());
+  });
+});
+
+describe('RiskRegistryDetail — Step 2 CQPS Determination visibility', () => {
+  function buildProps2(fieldOverrides: Record<string, unknown> = {}): IRiskRegistryDetailProps {
+    const item = buildSampleRiskRegistryItem({
+      fields: { cqpsDetermination: undefined, ...fieldOverrides } as never
+    });
+    return buildProps({ selectedStep: 2, repositories: buildRepositories({ riskRegistry: new MockRiskRegistryRepository({ item }) }) });
+  }
+
+  it('hides the rejection reason field and shows Accountable Executive before CQPS Determination is "Rejected"', async () => {
+    render(<RiskRegistryDetail {...buildProps2()} />);
+
+    await screen.findByRole('button', { name: /^Save$/ });
+    expect(screen.queryByText('CQPS Determination Rejection Reason')).not.toBeInTheDocument();
+    expect(screen.getByText('Accountable Executive')).toBeInTheDocument();
+  });
+
+  it('shows the rejection reason field and hides Accountable Executive once CQPS Determination is "Rejected"', async () => {
+    const { container } = render(<RiskRegistryDetail {...buildProps2()} />);
+
+    await screen.findByRole('button', { name: /^Save$/ });
+
+    const dropdown = container.querySelector(`#${fieldDomId('cqpsDetermination')}`) as HTMLElement;
+    fireEvent.click(dropdown);
+    fireEvent.click(await screen.findByText('Rejected'));
+
+    expect(screen.getByText('CQPS Determination Rejection Reason')).toBeInTheDocument();
+    expect(screen.queryByText('Accountable Executive')).not.toBeInTheDocument();
   });
 });
 
@@ -623,13 +654,13 @@ describe('RiskRegistryDetail — step visibility and URL sync', () => {
     render(<RiskRegistryDetail {...buildProps()} />);
 
     await screen.findByText('Step 1: Intake & SBAR Documentation');
-    expect(screen.queryByText(/Step 2: Clinical Evaluation/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Step 2: Evaluation/)).not.toBeInTheDocument();
     expect(screen.queryByText(/Step 3: VP Assignment/)).not.toBeInTheDocument();
     expect(screen.queryByText(/Step 4: Action/)).not.toBeInTheDocument();
 
-    fireEvent.click(stepTileButton('2. Clinical Evaluation'));
+    fireEvent.click(stepTileButton('2. Evaluation'));
 
-    expect(await screen.findByText(/Step 2: Clinical Evaluation/)).toBeInTheDocument();
+    expect(await screen.findByText(/Step 2: Evaluation/)).toBeInTheDocument();
     expect(screen.queryByText('Step 1: Intake & SBAR Documentation')).not.toBeInTheDocument();
   });
 
@@ -649,7 +680,7 @@ describe('RiskRegistryDetail — step visibility and URL sync', () => {
     await screen.findByText('Step 1: Intake & SBAR Documentation');
     fireEvent.click(screen.getByRole('button', { name: /Next Step/i }));
 
-    expect(await screen.findByText(/Step 2: Clinical Evaluation/)).toBeInTheDocument();
+    expect(await screen.findByText(/Step 2: Evaluation/)).toBeInTheDocument();
     expect(window.location.search).toContain('step=2');
   });
 
@@ -657,7 +688,7 @@ describe('RiskRegistryDetail — step visibility and URL sync', () => {
     render(<RiskRegistryDetail {...buildProps({ isAdminView: true })} />);
 
     expect(await screen.findByText('Step 1: Intake & SBAR Documentation')).toBeInTheDocument();
-    expect(screen.getByText(/Step 2: Clinical Evaluation/)).toBeInTheDocument();
+    expect(screen.getByText(/Step 2: Evaluation/)).toBeInTheDocument();
     expect(screen.getByText(/Step 3: VP Assignment/)).toBeInTheDocument();
     expect(screen.getByText(/Step 4: Action/)).toBeInTheDocument();
   });
@@ -668,10 +699,10 @@ describe('RiskRegistryDetail — unsaved-changes guard on step navigation', () =
     render(<RiskRegistryDetail {...buildProps()} />);
 
     await screen.findByText('Step 1: Intake & SBAR Documentation');
-    fireEvent.click(stepTileButton('2. Clinical Evaluation'));
+    fireEvent.click(stepTileButton('2. Evaluation'));
 
     expect(screen.queryByText(/unsaved changes on this step/i)).not.toBeInTheDocument();
-    expect(await screen.findByText(/Step 2: Clinical Evaluation/)).toBeInTheDocument();
+    expect(await screen.findByText(/Step 2: Evaluation/)).toBeInTheDocument();
   });
 
   it('prompts before switching steps when there are unsaved edits, and lets the user stay put', async () => {
@@ -680,10 +711,10 @@ describe('RiskRegistryDetail — unsaved-changes guard on step navigation', () =
     await screen.findByRole('button', { name: /^Save$/ });
     fireEvent.change(titleInput(container), { target: { value: 'Changed title' } });
 
-    fireEvent.click(stepTileButton('2. Clinical Evaluation'));
+    fireEvent.click(stepTileButton('2. Evaluation'));
 
     expect(await screen.findByText(/unsaved changes on this step/i)).toBeInTheDocument();
-    expect(screen.queryByText(/Step 2: Clinical Evaluation/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Step 2: Evaluation/)).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Stay on This Step' }));
 
@@ -691,22 +722,24 @@ describe('RiskRegistryDetail — unsaved-changes guard on step navigation', () =
     // animation, so this only asserts on the behavior that matters here:
     // the step never changed, and the unsaved edit is still intact.
     expect(screen.getByText('Step 1: Intake & SBAR Documentation')).toBeInTheDocument();
-    expect(screen.queryByText(/Step 2: Clinical Evaluation/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Step 2: Evaluation/)).not.toBeInTheDocument();
     expect(titleInput(container).value).toBe('Changed title');
   });
 
-  it('discards the edit and switches steps when the user chooses Discard Changes', async () => {
+  it('discards the edit and switches steps when the user chooses Discard Changes, staying in edit mode', async () => {
     const { container } = render(<RiskRegistryDetail {...buildProps()} />);
 
     await screen.findByRole('button', { name: /^Save$/ });
     fireEvent.change(titleInput(container), { target: { value: 'Changed title' } });
 
-    fireEvent.click(stepTileButton('2. Clinical Evaluation'));
+    fireEvent.click(stepTileButton('2. Evaluation'));
     fireEvent.click(await screen.findByRole('button', { name: 'Discard Changes' }));
 
-    expect(await screen.findByText(/Step 2: Clinical Evaluation/)).toBeInTheDocument();
-    // Discarding exits edit mode too, the same as the existing Cancel button.
-    expect(await screen.findByRole('button', { name: 'Edit' })).toBeInTheDocument();
+    expect(await screen.findByText(/Step 2: Evaluation/)).toBeInTheDocument();
+    // Per the "always edit mode" requirement, discarding never exits edit
+    // mode — "Cancel" remains, not a read-only "Edit" button.
+    expect(await screen.findByRole('button', { name: 'Cancel' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument();
   });
 
   it('saves the edit and switches steps when the user chooses Save Changes', async () => {
@@ -715,10 +748,10 @@ describe('RiskRegistryDetail — unsaved-changes guard on step navigation', () =
     await screen.findByRole('button', { name: /^Save$/ });
     fireEvent.change(titleInput(container), { target: { value: 'Changed title' } });
 
-    fireEvent.click(stepTileButton('2. Clinical Evaluation'));
+    fireEvent.click(stepTileButton('2. Evaluation'));
     fireEvent.click(await screen.findByRole('button', { name: 'Save Changes' }));
 
-    expect(await screen.findByText(/Step 2: Clinical Evaluation/)).toBeInTheDocument();
+    expect(await screen.findByText(/Step 2: Evaluation/)).toBeInTheDocument();
     // Saving keeps the page in edit mode (unlike Discard, above) — "Save" is
     // still there, now disabled again since the just-saved draft is no
     // longer dirty.
@@ -886,33 +919,33 @@ describe('RiskRegistryDetail — Step 3 section visibility', () => {
     return buildProps({ selectedStep: 3, repositories: buildRepositories({ riskRegistry: new MockRiskRegistryRepository({ item }) }) });
   }
 
-  it('hides both scope sections, and no "Quality Committee Governance" section, before Assignement Type is chosen', async () => {
+  it('hides both scope sections, and no "Quality Committee Governance" section, before Assignment Type is chosen', async () => {
     render(<RiskRegistryDetail {...buildProps3()} />);
 
     await screen.findByRole('button', { name: /^Save$/ });
-    expect(screen.queryByText('Clinical Assessment Scope')).not.toBeInTheDocument();
+    expect(screen.queryByText('Assessment/Correction Details')).not.toBeInTheDocument();
     expect(screen.queryByText('Correction Scope & Systems')).not.toBeInTheDocument();
     expect(screen.queryByText('Quality Committee Governance')).not.toBeInTheDocument();
   });
 
-  it('shows "Clinical Assessment Scope" (not "Correction Scope & Systems") once Assignement Type is "Assessment"', async () => {
+  it('shows "Assessment/Correction Details" (not "Correction Scope & Systems") once Assignment Type is "Assessment"', async () => {
     const { container } = render(<RiskRegistryDetail {...buildProps3()} />);
 
     await screen.findByRole('button', { name: /^Save$/ });
     await chooseDropdownOption(container, 'assignmentType', 'Assessment');
 
-    expect(screen.getByText('Clinical Assessment Scope')).toBeInTheDocument();
+    expect(screen.getByText('Assessment/Correction Details')).toBeInTheDocument();
     expect(screen.queryByText('Correction Scope & Systems')).not.toBeInTheDocument();
   });
 
-  it('shows "Correction Scope & Systems" (not "Clinical Assessment Scope") once Assignement Type is "Correction", and shows the moved fields inside it', async () => {
+  it('shows "Correction Scope & Systems" (not "Assessment/Correction Details") once Assignment Type is "Correction", and shows the moved fields inside it', async () => {
     const { container } = render(<RiskRegistryDetail {...buildProps3()} />);
 
     await screen.findByRole('button', { name: /^Save$/ });
-    expect(screen.queryByText('Clinical Assessment Scope')).not.toBeInTheDocument();
+    expect(screen.queryByText('Assessment/Correction Details')).not.toBeInTheDocument();
     await chooseDropdownOption(container, 'assignmentType', 'Correction');
 
-    expect(screen.queryByText('Clinical Assessment Scope')).not.toBeInTheDocument();
+    expect(screen.queryByText('Assessment/Correction Details')).not.toBeInTheDocument();
     expect(screen.getByText('Correction Scope & Systems')).toBeInTheDocument();
 
     // "Assigned to Department" — moved from "Departmental Assignment &

@@ -23,7 +23,7 @@ export interface IRiskRegistryPerson {
  * `sanitizeNoteText` by the time it reaches here — nothing downstream needs
  * to sanitize it again.
  */
-export type RiskRegistryFieldValue = string | number | boolean | IRiskRegistryPerson | undefined;
+export type RiskRegistryFieldValue = string | number | boolean | IRiskRegistryPerson | readonly string[] | undefined;
 
 /**
  * A fully mapped `RiskRegistryData` item.

@@ -131,7 +131,6 @@ export const RiskRegistryDetailNew: React.FC<IRiskRegistryDetailNewProps> = ({
         </div>
 
         <WorkflowStepper
-          riskStatus={typeof create.draftValues.riskStatus === 'string' ? create.draftValues.riskStatus : undefined}
           activeStep={activeStep}
           onStepChange={setActiveStep}
           disabledSteps={isAdminView ? undefined : DISABLED_STEPS_BEFORE_CREATE}

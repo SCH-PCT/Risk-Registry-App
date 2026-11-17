@@ -5,9 +5,9 @@
  */
 
 import { StatusTone } from '../../../components/common/StatusBadge';
-import { asNumber, asPerson, asText } from '../../../utilities/riskFieldValue';
+import { asNumber, asPerson, asStringArray, asText } from '../../../utilities/riskFieldValue';
 
-export { asNumber, asPerson, asText };
+export { asNumber, asPerson, asStringArray, asText };
 
 /** Tone for the `riskStatus` pill. Every declared status is covered explicitly — no fallback guess. */
 const STATUS_TONE: Readonly<Record<string, StatusTone>> = {

@@ -14,15 +14,31 @@
  *
  * ## The query-string contract
  *
- * The web part reads the item from the `id` query-string parameter, e.g.
- * `...?id=482`. The value must be a positive integer with no extra characters
- * — SharePoint item IDs are never zero, negative, fractional or non-numeric,
- * so anything else is rejected before a network call is made rather than
- * being sent to the server and producing an opaque error.
+ * The web part reads the item from the `itemId` query-string parameter, e.g.
+ * `...?itemId=482`. The value must be a positive integer with no extra
+ * characters — SharePoint item IDs are never zero, negative, fractional or
+ * non-numeric, so anything else is rejected before a network call is made
+ * rather than being sent to the server and producing an opaque error.
+ * Deliberately not called `riskId` despite identifying the system id, not
+ * the `RiskID`/`riskId` business field this module's own header distinguishes
+ * it from — reusing that name here would blur exactly the distinction this
+ * module exists to keep clear.
+ *
+ * Also deliberately not named `id`: on a modern Site Page, SharePoint's own
+ * classic page-resolution pipeline can intercept a plain `?id=` parameter and
+ * try to resolve it as a list-item id *in the Site Pages library the page
+ * itself lives in* — unrelated to `RiskRegistryData` entirely. For most
+ * values this silently does nothing, but for a value that happens to miss
+ * every item in that library, SharePoint serves its own classic
+ * "No item exists… it may have been deleted or renamed" error page instead
+ * of ever loading this web part's bundle. Confirmed live: `?id=1` loaded the
+ * app fine, `?id=8` hit that error before any of our code ran, and
+ * `?foo=8` passed through untouched — a name SharePoint has no reserved
+ * meaning for avoids the collision outright.
  */
 
 /** Name of the query-string parameter the Detail web part reads. */
-export const RISK_ITEM_ID_QUERY_PARAM = 'id';
+export const RISK_ITEM_ID_QUERY_PARAM = 'itemId';
 
 /** Upper bound sanity check. SharePoint item IDs are 32-bit; this rejects garbage early. */
 const MAX_SAFE_ITEM_ID = 2147483647;

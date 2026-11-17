@@ -25,11 +25,11 @@ describe('parseIsAdminView', () => {
 
 describe('parseIsAdminViewFromUrl', () => {
   it('reads the adminview parameter from a full URL', () => {
-    expect(parseIsAdminViewFromUrl('https://contoso.sharepoint.com/sites/x/RiskDetail.aspx?id=482&adminview=true')).toBe(true);
+    expect(parseIsAdminViewFromUrl('https://contoso.sharepoint.com/sites/x/RiskDetail.aspx?itemId=482&adminview=true')).toBe(true);
   });
 
   it('is false when the parameter is absent', () => {
-    expect(parseIsAdminViewFromUrl('https://contoso.sharepoint.com/sites/x/RiskDetail.aspx?id=482')).toBe(false);
+    expect(parseIsAdminViewFromUrl('https://contoso.sharepoint.com/sites/x/RiskDetail.aspx?itemId=482')).toBe(false);
   });
 
   it('is false for a malformed URL', () => {

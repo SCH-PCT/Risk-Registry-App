@@ -371,9 +371,14 @@ export function useRiskRegistryDetail(options: IUseRiskRegistryDetailOptions): I
   }, [item, canEdit, edit.isEditing, itemId, startEdit]);
 
   const cancelEdit = React.useCallback(() => {
-    setEdit(EMPTY_EDIT_STATE);
+    // Discards draft changes back to the last-saved baseline but, per the
+    // "always edit mode" requirement, never drops into read-only mode —
+    // unlike the old `EMPTY_EDIT_STATE` reset this replaced.
+    if (item) {
+      setEdit(buildEditingState(item));
+    }
     setSaveError(undefined);
-  }, []);
+  }, [item]);
 
   const setFieldValue = React.useCallback((key: RiskRegistryDataFieldKey, value: RiskRegistryFieldValue) => {
     setEdit((previous) => {
@@ -500,7 +505,9 @@ export function useRiskRegistryDetail(options: IUseRiskRegistryDetailOptions): I
       return;
     }
     setItem(conflict.serverItem);
-    setEdit(EMPTY_EDIT_STATE);
+    // Re-baseline on the server's copy but, per the "always edit mode"
+    // requirement, stay in edit mode rather than dropping to read-only.
+    setEdit(buildEditingState(conflict.serverItem));
     setConflict(undefined);
     setSaveError(undefined);
   }, [conflict]);

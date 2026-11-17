@@ -18,6 +18,14 @@ export function asNumber(value: RiskRegistryFieldValue): number | undefined {
   return typeof value === 'number' ? value : undefined;
 }
 
+function isPersonValue(value: RiskRegistryFieldValue): value is IRiskRegistryPerson {
+  return typeof value === 'object' && value !== null && !Array.isArray(value) && 'displayName' in value;
+}
+
 export function asPerson(value: RiskRegistryFieldValue): IRiskRegistryPerson | undefined {
-  return value && typeof value === 'object' ? value : undefined;
+  return isPersonValue(value) ? value : undefined;
+}
+
+export function asStringArray(value: RiskRegistryFieldValue): readonly string[] | undefined {
+  return Array.isArray(value) ? value : undefined;
 }

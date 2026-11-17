@@ -12,7 +12,7 @@ export interface IPersonFieldDto {
   readonly EMail?: string | null;
 }
 
-export type RiskRegistryRawFieldValue = string | number | boolean | IPersonFieldDto | null | undefined;
+export type RiskRegistryRawFieldValue = string | number | boolean | IPersonFieldDto | readonly string[] | null | undefined;
 
 /**
  * Raw shape of a `RiskRegistryData` list row, exactly as SharePoint returns it.

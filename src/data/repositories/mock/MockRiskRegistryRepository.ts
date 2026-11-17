@@ -32,7 +32,7 @@ export function buildSampleRiskRegistryItem(overrides: Partial<IRiskRegistryItem
       riskSummary: 'Pump dose rate did not match the ordered rate during a routine infusion check.',
       hasHarmToPatientVisitorWorkforce: 'No',
       eFeedbackNumber: 48213,
-      riskIdentificationMethods: 'CQPS Rounding/Observation',
+      riskIdentificationMethods: ['CQPS Rounding/Observation'],
       sbarReviewComplete: true,
       primarySeverityCategory: 'Patient Harm',
       riskPriorityRating: '2 - Noncompliance with safety risks',

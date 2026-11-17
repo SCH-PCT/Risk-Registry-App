@@ -3,9 +3,10 @@ import { Icon } from '@fluentui/react';
 
 import { IRiskRegistryItem } from '../../../models/domain/IRiskRegistryItem';
 import { StatusBadge } from '../../../components/common/StatusBadge';
+import { buildUrlWithItemId } from '../../../utilities/itemIdentifier';
 import { mapPriorityRatingToTier, RiskSeverityTier } from '../../../utilities/riskPriorityTier';
 import { mapRiskStatusToStep } from '../../../utilities/riskStatusStep';
-import { asPerson, asText, formatShortDate, initialsFor, statusToneFor } from './riskListPresentation';
+import { asPerson, asStringArray, asText, formatShortDate, initialsFor, statusToneFor } from './riskListPresentation';
 import styles from './RiskListCard.module.scss';
 
 export interface IRiskListCardProps {
@@ -79,7 +80,7 @@ export const RiskListCard: React.FC<IRiskListCardProps> = ({ item, detailUrl, we
   const riskPriorityRating = asText(fields.riskPriorityRating);
   const hasHarm = asText(fields.hasHarmToPatientVisitorWorkforce);
   const capStatus = asText(fields.capStatus);
-  const category = asText(fields.anticipatedResourceForCorrection);
+  const category = asStringArray(fields.anticipatedResourceForCorrection)?.join(', ');
   const unit = asText(fields.microSystem) ?? asText(fields.mesoSystem) ?? asText(fields.assignedToDepartment);
   const executive = asPerson(fields.accountableExecutive);
   const assignedTo = asPerson(fields.evaluatorAssigned);
@@ -96,10 +97,12 @@ export const RiskListCard: React.FC<IRiskListCardProps> = ({ item, detailUrl, we
   const metaParts = [category, unit].filter((value): value is string => value !== undefined && value.length > 0);
   const submittedDate = formatShortDate(item.created);
 
-  // Routed on the system `id`, matching the Detail web part's own
-  // `?id=` contract (see `itemIdentifier.ts`) — not `riskId`, which is an
-  // optional, non-unique business field.
-  const detailHref = detailUrl ? `${detailUrl}${detailUrl.indexOf('?') === -1 ? '?' : '&'}id=${item.id}` : undefined;
+  // Routed on the system id, matching the Detail web part's own
+  // query-string contract (see `itemIdentifier.ts`) — not the `riskId`
+  // field, which is an optional, non-unique business field. Built via the
+  // shared `buildUrlWithItemId` rather than hand-rolled `?`/`&` string
+  // concatenation, so this link always uses the one real parameter name.
+  const detailHref = detailUrl ? buildUrlWithItemId(detailUrl, item.id) : undefined;
   const isClickable = detailHref !== undefined;
 
   const handleClick = (): void => {
@@ -112,7 +115,28 @@ export const RiskListCard: React.FC<IRiskListCardProps> = ({ item, detailUrl, we
   // also reaching the card's `onClick` above, or a modifier-key click
   // (ctrl/cmd-click to open a new tab, etc.) would be clobbered by the
   // card's plain same-tab `window.location.assign`.
-  const handleTitleLinkClick = (event: React.MouseEvent): void => event.stopPropagation();
+  //
+  // For a plain left-click specifically, additionally `preventDefault()`
+  // and perform the navigation ourselves via `window.location.assign`
+  // instead of letting the browser follow the `<a href>` natively. SharePoint's
+  // own page shell listens for exactly that native anchor click on a
+  // same-site link and intercepts it with its own client-side "soft"
+  // page transition — which can fail when the destination page hosts
+  // different SPFx web parts, and falls back to SharePoint's own generic
+  // "Sorry, something went wrong" error screen (seen even for an item that
+  // genuinely exists — nothing to do with our own data lookup). A
+  // script-driven `location.assign` is a real, full navigation that never
+  // raises a "click" event for that listener to intercept in the first
+  // place. Modifier-key and middle clicks are left alone so the browser's
+  // native new-tab/new-window behavior for those still works.
+  const handleTitleLinkClick = (event: React.MouseEvent): void => {
+    event.stopPropagation();
+
+    if (event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey && detailHref) {
+      event.preventDefault();
+      window.location.assign(detailHref);
+    }
+  };
 
   const handleCopyId = (event: React.MouseEvent): void => {
     event.stopPropagation();

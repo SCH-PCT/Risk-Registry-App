@@ -91,26 +91,26 @@ describe('validateRequiredFieldsPresent', () => {
 });
 
 describe('validateOtherResourceForCorrection', () => {
-  it('is not required when Anticipated Resource for Correction is unset', () => {
+  it('is not required when Anticipated Resource(s) for Correction is unset', () => {
     expect(validateOtherResourceForCorrection({})).toBeUndefined();
   });
 
-  it('is not required when Anticipated Resource for Correction is set to something other than "Other"', () => {
+  it('is not required when Anticipated Resource(s) for Correction is set to something other than "Other"', () => {
     expect(
-      validateOtherResourceForCorrection({ anticipatedResourceForCorrection: 'Clinical Analytics' })
+      validateOtherResourceForCorrection({ anticipatedResourceForCorrection: ['Clinical Analytics'] })
     ).toBeUndefined();
   });
 
-  it('is required, and empty, once Anticipated Resource for Correction is "Other"', () => {
-    expect(validateOtherResourceForCorrection({ anticipatedResourceForCorrection: 'Other' })).toMatch(
-      /is required when Anticipated Resource for Correction is "Other"/
+  it('is required, and empty, once Anticipated Resource(s) for Correction includes "Other"', () => {
+    expect(validateOtherResourceForCorrection({ anticipatedResourceForCorrection: ['Other'] })).toMatch(
+      /is required when Anticipated Resource\(s\) for Correction includes "Other"/
     );
   });
 
   it('passes once a value is supplied', () => {
     expect(
       validateOtherResourceForCorrection({
-        anticipatedResourceForCorrection: 'Other',
+        anticipatedResourceForCorrection: ['Other'],
         otherResourceForCorrection: 'New vendor contract'
       })
     ).toBeUndefined();
@@ -125,12 +125,12 @@ describe('validateOtherResourceForCorrection', () => {
 
 describe('validateConditionalRequirements', () => {
   it('flags otherResourceForCorrection under the same condition', () => {
-    const errors = validateConditionalRequirements({ anticipatedResourceForCorrection: 'Other' });
+    const errors = validateConditionalRequirements({ anticipatedResourceForCorrection: ['Other'] });
     expect(errors.otherResourceForCorrection).toMatch(/required/i);
   });
 
   it('returns no errors when the condition does not apply', () => {
-    expect(validateConditionalRequirements({ anticipatedResourceForCorrection: 'Clinical Analytics' })).toEqual({});
+    expect(validateConditionalRequirements({ anticipatedResourceForCorrection: ['Clinical Analytics'] })).toEqual({});
   });
 });
 
@@ -141,9 +141,9 @@ describe('isFieldVisible', () => {
     expect(isFieldVisible('eFeedbackNumber', { hasHarmToPatientVisitorWorkforce: 'Yes' })).toBe(true);
   });
 
-  it('shows Details of Harm for both "Yes" and "Unknown"', () => {
+  it('shows Details of Harm only for "Yes", not "Unknown" or "No"', () => {
     expect(isFieldVisible('detailsOfHarm', { hasHarmToPatientVisitorWorkforce: 'Yes' })).toBe(true);
-    expect(isFieldVisible('detailsOfHarm', { hasHarmToPatientVisitorWorkforce: 'Unknown' })).toBe(true);
+    expect(isFieldVisible('detailsOfHarm', { hasHarmToPatientVisitorWorkforce: 'Unknown' })).toBe(false);
     expect(isFieldVisible('detailsOfHarm', { hasHarmToPatientVisitorWorkforce: 'No' })).toBe(false);
   });
 
@@ -169,6 +169,17 @@ describe('isFieldVisible', () => {
 
   it('is always visible for a field with no conditional rule', () => {
     expect(isFieldVisible('riskSummary', {})).toBe(true);
+  });
+
+  it('shows CQPS Determination Rejection Reason only once CQPS Determination is "Rejected", and hides Accountable Executive at the same time', () => {
+    expect(isFieldVisible('cqpsDeterminationRejectionReason', { cqpsDetermination: 'Rejected' })).toBe(true);
+    expect(isFieldVisible('accountableExecutive', { cqpsDetermination: 'Rejected' })).toBe(false);
+
+    expect(isFieldVisible('cqpsDeterminationRejectionReason', { cqpsDetermination: 'Approved' })).toBe(false);
+    expect(isFieldVisible('accountableExecutive', { cqpsDetermination: 'Approved' })).toBe(true);
+
+    expect(isFieldVisible('cqpsDeterminationRejectionReason', {})).toBe(false);
+    expect(isFieldVisible('accountableExecutive', {})).toBe(true);
   });
 });
 
@@ -208,10 +219,10 @@ describe('getConditionalFieldKeysAffectedBy', () => {
 describe('validateConditionalField', () => {
   it('requires Risk Identification Methods-Specify Other Source only when "Other" is selected', () => {
     expect(
-      validateConditionalField('riskIdentificationMethodsSpecifyOther', { riskIdentificationMethods: 'Other' })
-    ).toMatch(/is required when Risk Identification Methods is "Other"/);
+      validateConditionalField('riskIdentificationMethodsSpecifyOther', { riskIdentificationMethods: ['Other'] })
+    ).toMatch(/is required when Risk Identification Methods includes "Other"/);
     expect(
-      validateConditionalField('riskIdentificationMethodsSpecifyOther', { riskIdentificationMethods: 'Escalation' })
+      validateConditionalField('riskIdentificationMethodsSpecifyOther', { riskIdentificationMethods: ['Escalation'] })
     ).toBeUndefined();
   });
 
@@ -325,7 +336,7 @@ describe('clearHiddenFieldValues', () => {
   });
 
   it('is a no-op when nothing is hidden', () => {
-    const draft = { anticipatedResourceForCorrection: 'Other', otherResourceForCorrection: 'New vendor contract' };
+    const draft = { anticipatedResourceForCorrection: ['Other'], otherResourceForCorrection: 'New vendor contract' };
     expect(clearHiddenFieldValues(draft)).toEqual(draft);
   });
 });

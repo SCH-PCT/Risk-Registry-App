@@ -1,9 +1,9 @@
 /**
  * Reads the `step` query-string parameter that selects which of the Detail
  * web part's four numbered step tiles (`WorkflowStepper`) renders in the
- * "selected" style, e.g. `...?id=482&step=3`.
+ * "selected" style, e.g. `...?itemId=482&step=3`.
  *
- * Unlike the `id` parameter (see `itemIdentifier.ts`), a bad or missing
+ * Unlike the `itemId` parameter (see `itemIdentifier.ts`), a bad or missing
  * value here has no invalid-page failure mode to guard against — it only
  * changes which tile is visually highlighted, never which data loads — so
  * this resolves a safe default (step 1) for anything blank, non-numeric, or

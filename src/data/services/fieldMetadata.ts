@@ -26,6 +26,9 @@ function isEmptyValue(value: RiskRegistryFieldValue): boolean {
   if (typeof value === 'string') {
     return value.trim().length === 0;
   }
+  if (Array.isArray(value)) {
+    return value.length === 0;
+  }
   return false;
 }
 
@@ -61,6 +64,8 @@ export function validateFieldValue(key: RiskRegistryDataFieldKey, value: RiskReg
       return validateNumberValue(definition, value);
     case 'Choice':
       return validateChoiceValue(definition, value);
+    case 'MultiChoice':
+      return validateMultiChoiceValue(definition, value);
     case 'Boolean':
       return validateBooleanValue(definition, value);
     case 'DateTime':
@@ -94,6 +99,16 @@ function validateChoiceValue(definition: IRiskFieldDefinition, value: RiskRegist
     return `${definition.displayName} must be one of the listed choices.`;
   }
   if (definition.choices && definition.choices.indexOf(value) === -1) {
+    return `${definition.displayName} must be one of the listed choices.`;
+  }
+  return undefined;
+}
+
+function validateMultiChoiceValue(definition: IRiskFieldDefinition, value: RiskRegistryFieldValue): string | undefined {
+  if (!Array.isArray(value)) {
+    return `${definition.displayName} must be one of the listed choices.`;
+  }
+  if (definition.choices && value.some((choice) => typeof choice !== 'string' || definition.choices?.indexOf(choice) === -1)) {
     return `${definition.displayName} must be one of the listed choices.`;
   }
   return undefined;
@@ -184,8 +199,11 @@ const CONDITIONAL_FIELD_RULES: Partial<Record<RiskRegistryDataFieldKey, IConditi
   // --- Step 1 ---
   otherResourceForCorrection: {
     dependsOn: ['anticipatedResourceForCorrection'],
-    isApplicable: (draft) => draft.anticipatedResourceForCorrection === 'Other',
-    conditionDescription: 'Anticipated Resource for Correction is "Other"'
+    // "Anticipated Resource(s) for Correction" is multi-select — `includes`,
+    // not `===`, since the draft value is now an array of chosen choices.
+    isApplicable: (draft) =>
+      Array.isArray(draft.anticipatedResourceForCorrection) && draft.anticipatedResourceForCorrection.includes('Other'),
+    conditionDescription: 'Anticipated Resource(s) for Correction includes "Other"'
   },
   eFeedbackNumber: {
     dependsOn: ['hasHarmToPatientVisitorWorkforce'],
@@ -195,15 +213,16 @@ const CONDITIONAL_FIELD_RULES: Partial<Record<RiskRegistryDataFieldKey, IConditi
   },
   detailsOfHarm: {
     dependsOn: ['hasHarmToPatientVisitorWorkforce'],
-    isApplicable: (draft) =>
-      draft.hasHarmToPatientVisitorWorkforce === 'Yes' || draft.hasHarmToPatientVisitorWorkforce === 'Unknown',
+    isApplicable: (draft) => draft.hasHarmToPatientVisitorWorkforce === 'Yes',
     isRequiredWhenApplicable: false,
-    conditionDescription: 'harm is reported as "Yes" or "Unknown"'
+    conditionDescription: 'harm is reported as "Yes"'
   },
   riskIdentificationMethodsSpecifyOther: {
     dependsOn: ['riskIdentificationMethods'],
-    isApplicable: (draft) => draft.riskIdentificationMethods === 'Other',
-    conditionDescription: 'Risk Identification Methods is "Other"'
+    // "Risk Identification Methods" is multi-select — `includes`, not
+    // `===`, since the draft value is now an array of chosen choices.
+    isApplicable: (draft) => Array.isArray(draft.riskIdentificationMethods) && draft.riskIdentificationMethods.includes('Other'),
+    conditionDescription: 'Risk Identification Methods includes "Other"'
   },
   primarySeverityCategorySpecifyOther: {
     dependsOn: ['primarySeverityCategory'],
@@ -211,16 +230,33 @@ const CONDITIONAL_FIELD_RULES: Partial<Record<RiskRegistryDataFieldKey, IConditi
     conditionDescription: 'Primary Severity (Potential Harm) Category is "Other"'
   },
 
+  // --- Step 2 ---
+  cqpsDeterminationRejectionReason: {
+    dependsOn: ['cqpsDetermination'],
+    isApplicable: (draft) => draft.cqpsDetermination === 'Rejected',
+    isRequiredWhenApplicable: false,
+    conditionDescription: 'CQPS Determination is "Rejected"'
+  },
+  // Hidden (not just conditionally required) once "CQPS Determination" is
+  // "Rejected" — per explicit requirement, a rejected determination has no
+  // accountable executive to route to yet.
+  accountableExecutive: {
+    dependsOn: ['cqpsDetermination'],
+    isApplicable: (draft) => draft.cqpsDetermination !== 'Rejected',
+    isRequiredWhenApplicable: false,
+    conditionDescription: 'CQPS Determination is not "Rejected"'
+  },
+
   // --- Step 3 ---
   assessmentType: {
     dependsOn: ['assignmentType'],
     isApplicable: (draft) => draft.assignmentType === 'Assessment',
-    conditionDescription: 'Assignement Type is "Assessment"'
+    conditionDescription: 'Assignment Type is "Assessment"'
   },
   correctionCategory: {
     dependsOn: ['assignmentType'],
     isApplicable: (draft) => draft.assignmentType === 'Correction',
-    conditionDescription: 'Assignement Type is "Correction"'
+    conditionDescription: 'Assignment Type is "Correction"'
   },
   assessmentTypeSpecifyOther: {
     dependsOn: ['assessmentType'],

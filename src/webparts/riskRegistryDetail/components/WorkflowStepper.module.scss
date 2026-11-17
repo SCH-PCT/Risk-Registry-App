@@ -65,27 +65,6 @@
   font-family: 'Consolas', 'JetBrains Mono', monospace;
 }
 
-.statusChip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.125rem 0.5rem;
-  border-radius: 999px;
-  background-color: $rr-surface-container;
-  color: $rr-ink-secondary;
-  font-size: 0.6875rem;
-  font-weight: 700;
-
-  :global(i) {
-    font-size: 0.75rem;
-  }
-}
-
-.statusChipActive {
-  background-color: $rr-teal-900;
-  color: #ffffff;
-}
-
 .tileMain {
   display: flex;
   align-items: center;
@@ -178,10 +157,5 @@
 
   .active {
     border-color: Highlight;
-  }
-
-  .statusChipActive {
-    background-color: Highlight;
-    color: HighlightText;
   }
 }

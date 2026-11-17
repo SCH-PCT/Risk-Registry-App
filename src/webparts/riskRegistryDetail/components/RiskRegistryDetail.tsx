@@ -244,11 +244,7 @@ const RiskRegistryDetailLoaded: React.FC<IRiskRegistryDetailProps & { itemId: nu
           </div>
         </div>
 
-        <WorkflowStepper
-          riskStatus={typeof values.riskStatus === 'string' ? values.riskStatus : undefined}
-          activeStep={activeStep}
-          onStepChange={handleStepChangeRequest}
-        />
+        <WorkflowStepper activeStep={activeStep} onStepChange={handleStepChangeRequest} />
 
         <div className={styles.headerMeta}>
           <div className={styles.refreshRow}>

@@ -145,15 +145,16 @@ export const FieldRenderer: React.FC<IFieldRendererProps> = ({
         return (
           <TextField
             id={domId}
-            type="number"
+            type="text"
+            inputMode="numeric"
             value={typeof value === 'number' ? String(value) : ''}
+            // Plain text, not `type="number"` — no up/down spinner — and
+            // every non-digit character (including "-") is stripped before
+            // it ever reaches state, per explicit requirement that this
+            // input only ever holds digits.
             onChange={(_, newValue) => {
-              if (newValue === undefined || newValue === '') {
-                handleChange(undefined);
-                return;
-              }
-              const parsed = Number(newValue);
-              handleChange(Number.isFinite(parsed) ? parsed : newValue);
+              const digitsOnly = (newValue ?? '').replace(/\D/g, '');
+              handleChange(digitsOnly === '' ? undefined : Number(digitsOnly));
             }}
             errorMessage={error}
           />
@@ -182,6 +183,37 @@ export const FieldRenderer: React.FC<IFieldRendererProps> = ({
             selectedKey={selectedKey}
             options={options}
             onChange={(_, option) => handleChange(option ? (option.data as string | undefined) : undefined)}
+            errorMessage={error}
+          />
+        );
+      }
+      case 'MultiChoice': {
+        const options: IDropdownOption[] = (definition.choices ?? []).map((choice, index) => ({
+          key: `${choice}-${index}`,
+          text: choice,
+          title: choice,
+          data: choice
+        }));
+        const selectedValues = Array.isArray(value) ? value : [];
+        const selectedKeys = options
+          .filter((option) => selectedValues.indexOf(option.data as string) !== -1)
+          .map((option) => option.key as string);
+        return (
+          <Dropdown
+            id={domId}
+            multiSelect
+            selectedKeys={selectedKeys}
+            options={options}
+            onChange={(_, option) => {
+              if (!option) {
+                return;
+              }
+              const choice = option.data as string;
+              const next = option.selected
+                ? [...selectedValues, choice]
+                : selectedValues.filter((existing) => existing !== choice);
+              handleChange(next);
+            }}
             errorMessage={error}
           />
         );
@@ -221,7 +253,7 @@ export const FieldRenderer: React.FC<IFieldRendererProps> = ({
   };
 
   function renderReadValue(): React.ReactElement {
-    if (value === undefined || value === null || value === '') {
+    if (value === undefined || value === null || value === '' || (Array.isArray(value) && value.length === 0)) {
       return (
         <span id={domId} className={styles.emptyValue}>
           —
@@ -240,6 +272,16 @@ export const FieldRenderer: React.FC<IFieldRendererProps> = ({
         return typeof value === 'string' ? (
           <span id={domId}>
             <StatusBadge text={value} tone={resolveStatusTone(value)} />
+          </span>
+        ) : (
+          <span id={domId}>—</span>
+        );
+      case 'MultiChoice':
+        return Array.isArray(value) ? (
+          <span id={domId} className={styles.multiValueList}>
+            {value.map((choice) => (
+              <StatusBadge key={choice} text={choice} tone={resolveStatusTone(choice)} />
+            ))}
           </span>
         ) : (
           <span id={domId}>—</span>

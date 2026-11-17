@@ -77,6 +77,23 @@ describe('mapRiskRegistryItem', () => {
 
     expect(item.fields.riskStatus).toBeUndefined();
   });
+
+  it('maps a MultiChoice field into an array of strings', () => {
+    const dto: IRiskRegistryItemDto = {
+      Id: 1,
+      RiskIdentificationMethods: ['Escalation', 'Other']
+    };
+    const item = mapRiskRegistryItem({ item: dto, etag: '"1"' });
+
+    expect(item.fields.riskIdentificationMethods).toEqual(['Escalation', 'Other']);
+  });
+
+  it('omits a MultiChoice field whose raw value is not an array', () => {
+    const dto: IRiskRegistryItemDto = { Id: 1, RiskIdentificationMethods: 'Escalation' };
+    const item = mapRiskRegistryItem({ item: dto, etag: '"1"' });
+
+    expect('riskIdentificationMethods' in item.fields).toBe(false);
+  });
 });
 
 describe('buildUpdatePayload', () => {
@@ -108,5 +125,10 @@ describe('buildUpdatePayload', () => {
   it('writes null for a field explicitly cleared to undefined', () => {
     const payload = buildUpdatePayload({ riskRatingJustification: undefined });
     expect(payload).toEqual({ RiskRatingJustification: null });
+  });
+
+  it('writes a MultiChoice field as a plain array of strings', () => {
+    const payload = buildUpdatePayload({ riskIdentificationMethods: ['Escalation', 'Other'] });
+    expect(payload).toEqual({ RiskIdentificationMethods: ['Escalation', 'Other'] });
   });
 });

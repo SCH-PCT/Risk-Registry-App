@@ -6,7 +6,6 @@ import { stepDomId } from './StepCard';
 import styles from './WorkflowStepper.module.scss';
 
 export interface IWorkflowStepperProps {
-  readonly riskStatus?: string;
   /** Which tile renders in the "selected" style — see `riskStepParam.ts`. */
   readonly activeStep: RiskWorkflowStepNumber;
   /** Called with a tile's step number when it is clicked. */
@@ -38,8 +37,8 @@ export const WORKFLOW_STEP_PILLS: readonly IStepPill[] = [
   {
     stepNumber: 2,
     stepId: 'clinical-evaluation',
-    label: 'Clinical Evaluation',
-    description: 'Severity tier & CQPS priority',
+    label: 'Evaluation',
+    description: 'Severity tier & CQPS determination',
     iconName: 'Health'
   },
   {
@@ -59,11 +58,9 @@ export const WORKFLOW_STEP_PILLS: readonly IStepPill[] = [
  * `onStepChange` — owned by the parent (`RiskRegistryDetail.tsx`), not this
  * component, because `StepFooter`'s Previous/Next buttons need to move the
  * same selection and the two controls would drift out of sync if each kept
- * its own copy. `riskStatus` is used only for display: the selected tile's
- * chip shows the record's actual status text instead of a generic
- * "In progress" label.
+ * its own copy.
  */
-export const WorkflowStepper: React.FC<IWorkflowStepperProps> = ({ riskStatus, activeStep, onStepChange, disabledSteps }) => {
+export const WorkflowStepper: React.FC<IWorkflowStepperProps> = ({ activeStep, onStepChange, disabledSteps }) => {
   const handleClick = (stepId: string, stepNumber: RiskWorkflowStepNumber): void => {
     onStepChange(stepNumber);
     document.getElementById(stepDomId(stepId))?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -84,10 +81,6 @@ export const WorkflowStepper: React.FC<IWorkflowStepperProps> = ({ riskStatus, a
             >
               <span className={styles.tileTop}>
                 <span className={styles.stepEyebrow}>Step {String(pill.stepNumber).padStart(2, '0')}</span>
-                <span className={`${styles.statusChip} ${isActive ? styles.statusChipActive : ''}`}>
-                  <Icon iconName={isActive ? 'LightningBolt' : 'Clock'} aria-hidden="true" />
-                  {isActive ? riskStatus ?? 'In progress' : 'Pending'}
-                </span>
               </span>
               <span className={styles.tileMain}>
                 <span className={styles.tileIcon}>

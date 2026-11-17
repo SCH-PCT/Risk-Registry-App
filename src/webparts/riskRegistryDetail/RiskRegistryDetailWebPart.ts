@@ -46,7 +46,7 @@ export interface IRiskRegistryDetailWebPartProperties {
  * ## Item resolution
  *
  * The item is identified by the `id` query-string parameter on the page
- * this web part is placed on (e.g. `.../SitePages/RiskDetail.aspx?id=482`),
+ * this web part is placed on (e.g. `.../SitePages/RiskDetail.aspx?itemId=482`),
  * not by a property-pane setting — see `utilities/itemIdentifier.ts` for why
  * the SharePoint system ID is used rather than the business `RiskID` field.
  * `onInit` resolves and validates this once; an invalid or missing value

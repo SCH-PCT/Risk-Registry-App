@@ -90,7 +90,7 @@ function classifyLoadError(error: unknown): RiskListErrorKind {
   return 'unknown';
 }
 
-const DEFAULT_PAGE_SIZE = 5;
+const DEFAULT_PAGE_SIZE = 50;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 function matchesSearch(item: IRiskRegistryItem, searchText: string): boolean {

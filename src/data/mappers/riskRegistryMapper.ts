@@ -68,6 +68,8 @@ function mapFieldFromDto(definition: IRiskFieldDefinition, raw: RiskRegistryRawF
       return typeof raw === 'boolean' ? raw : undefined;
     case 'Choice':
       return typeof raw === 'string' ? raw : undefined;
+    case 'MultiChoice':
+      return Array.isArray(raw) ? raw.filter((entry): entry is string => typeof entry === 'string') : undefined;
     case 'DateTime':
       return typeof raw === 'string' ? raw : undefined;
     case 'User':
@@ -147,6 +149,8 @@ function mapFieldToDto(definition: IRiskFieldDefinition, value: RiskRegistryFiel
     case 'Text':
     case 'Choice':
       return typeof value === 'string' ? value : null;
+    case 'MultiChoice':
+      return Array.isArray(value) ? value : null;
     case 'Note':
       return typeof value === 'string' ? sanitizeNoteText(value) : null;
     case 'Number':

@@ -13,7 +13,7 @@ import { RiskListCard } from './RiskListCard';
 import { asNumber, asPerson, asText, computePaginationPages } from './riskListPresentation';
 import styles from './RiskRegistryList.module.scss';
 
-const PAGE_SIZE_OPTIONS: readonly number[] = [5, 10, 25, 50];
+const PAGE_SIZE_OPTIONS: readonly number[] = [10, 25, 50, 100];
 
 function downloadCsv(rows: readonly string[][], fileName: string): void {
   const csv = rows

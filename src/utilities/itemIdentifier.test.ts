@@ -50,7 +50,7 @@ describe('parseItemId', () => {
 
 describe('parseItemIdFromUrl', () => {
   it('reads a valid id from the query string', () => {
-    expect(parseItemIdFromUrl('https://contoso.sharepoint.com/sites/RiskRegistry/SitePages/Detail.aspx?id=482')).toEqual({
+    expect(parseItemIdFromUrl('https://contoso.sharepoint.com/sites/RiskRegistry/SitePages/Detail.aspx?itemId=482')).toEqual({
       isValid: true,
       itemId: 482
     });
@@ -64,7 +64,7 @@ describe('parseItemIdFromUrl', () => {
   });
 
   it('rejects an invalid id parameter', () => {
-    expect(parseItemIdFromUrl('https://contoso.sharepoint.com/sites/RiskRegistry/SitePages/Detail.aspx?id=abc')).toEqual({
+    expect(parseItemIdFromUrl('https://contoso.sharepoint.com/sites/RiskRegistry/SitePages/Detail.aspx?itemId=abc')).toEqual({
       isValid: false,
       reason: 'not-a-positive-integer'
     });

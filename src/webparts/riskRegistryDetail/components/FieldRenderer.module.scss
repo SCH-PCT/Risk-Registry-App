@@ -64,3 +64,9 @@
   font-size: 0.875rem;
   color: $rr-ink;
 }
+
+.multiValueList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
