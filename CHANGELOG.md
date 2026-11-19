@@ -3,6 +3,15 @@
 Not following a strict SemVer release cadence yet — this project has not shipped a
 versioned release. Entries are dated by the work session that produced them.
 
+## 2026-11-18 — Detail web part field labels from `RiskRegistryDataColumns`
+
+- Renamed the `CAPCompleteAndReadyForReview` label to "CAP draft complete and ready for review?".
+- Field labels (form labels, error summary, validation messages) now come from the
+  `Title` of the `RiskRegistryDataColumns` row whose `InternalName` matches the field.
+  No row → the live `RiskRegistryData` display name → the catalog display name. Fields
+  that fall back are listed in a `console.warn` at load. See `src/config/fieldLabels.ts`
+  and `src/data/services/pnp/loadRiskRegistryDataFieldLabels.ts`.
+
 ## 2026-10-22 — Blank-id item creation on the Detail web part
 
 Added support for creating a new `RiskRegistryData` item when the Detail web

@@ -519,7 +519,7 @@ export const RISK_REGISTRY_DATA_FIELDS: Readonly<Record<string, IRiskFieldDefini
   // --- Step 4: Correction CAP ---
   capCompleteReadyForReview: {
     internalName: 'CAPCompleteAndReadyForReview',
-    displayName: 'CAP Complete and ready for review? (Clck to review CAP document before proceeding)',
+    displayName: 'CAP draft complete and ready for review?',
     type: 'Boolean',
     required: false
   },
@@ -841,6 +841,22 @@ export const RISK_REGISTRY_DATA: IListDefinition = {
   title: 'RiskRegistryData',
   purpose: 'Risk registry data — the parent entity for every child list',
   fields: toFieldMap(RISK_REGISTRY_DATA_FIELDS)
+};
+
+/**
+ * Field-label configuration for `RiskRegistryData`.
+ *
+ * Per explicit instruction (2026-11-18): each row's `Title` is the form label
+ * for the `RiskRegistryData` field whose internal name is in the row's
+ * `InternalName` column. The `InternalName` column's own internal name is taken
+ * from that instruction, not from a fields dump — if the list names it
+ * differently, label loading fails soft (labels fall back to the live
+ * `RiskRegistryData` display names) and a console warning says so.
+ */
+export const RISK_REGISTRY_DATA_COLUMNS: IListDefinition = {
+  title: 'RiskRegistryDataColumns',
+  purpose: 'Form labels for RiskRegistryData fields, keyed by field internal name',
+  fields: { label: 'Title', fieldInternalName: 'InternalName' }
 };
 
 /** Rich metadata for one `RiskRegistryData` field, or throws if the key is unknown. */

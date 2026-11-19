@@ -16,6 +16,7 @@ import {
   RISK_REGISTRY_DATA_FIELDS,
   RiskRegistryDataFieldKey
 } from '../../config/listSchema';
+import { getRiskRegistryDataFieldLabel, getRiskRegistryDataFieldLabelFor } from '../../config/fieldLabels';
 import { IRiskRegistryPerson, RiskRegistryFieldValue } from '../../models/domain/IRiskRegistryItem';
 import { RiskRegistryDraftValues, RiskRegistryFieldErrors } from '../../models/viewModels/IRiskRegistryEditState';
 
@@ -48,7 +49,7 @@ export function validateFieldValue(key: RiskRegistryDataFieldKey, value: RiskReg
   const definition = getRiskRegistryDataField(key);
 
   if (definition.required && isEmptyValue(value)) {
-    return `${definition.displayName} is required.`;
+    return `${getRiskRegistryDataFieldLabelFor(definition)} is required.`;
   }
 
   if (isEmptyValue(value)) {
@@ -79,62 +80,62 @@ export function validateFieldValue(key: RiskRegistryDataFieldKey, value: RiskReg
 
 function validateTextValue(definition: IRiskFieldDefinition, value: RiskRegistryFieldValue): string | undefined {
   if (typeof value !== 'string') {
-    return `${definition.displayName} must be text.`;
+    return `${getRiskRegistryDataFieldLabelFor(definition)} must be text.`;
   }
   if (definition.maxLength !== undefined && value.length > definition.maxLength) {
-    return `${definition.displayName} must be ${definition.maxLength} characters or fewer.`;
+    return `${getRiskRegistryDataFieldLabelFor(definition)} must be ${definition.maxLength} characters or fewer.`;
   }
   return undefined;
 }
 
 function validateNumberValue(definition: IRiskFieldDefinition, value: RiskRegistryFieldValue): string | undefined {
   if (typeof value !== 'number' || !Number.isFinite(value)) {
-    return `${definition.displayName} must be a number.`;
+    return `${getRiskRegistryDataFieldLabelFor(definition)} must be a number.`;
   }
   return undefined;
 }
 
 function validateChoiceValue(definition: IRiskFieldDefinition, value: RiskRegistryFieldValue): string | undefined {
   if (typeof value !== 'string') {
-    return `${definition.displayName} must be one of the listed choices.`;
+    return `${getRiskRegistryDataFieldLabelFor(definition)} must be one of the listed choices.`;
   }
   if (definition.choices && definition.choices.indexOf(value) === -1) {
-    return `${definition.displayName} must be one of the listed choices.`;
+    return `${getRiskRegistryDataFieldLabelFor(definition)} must be one of the listed choices.`;
   }
   return undefined;
 }
 
 function validateMultiChoiceValue(definition: IRiskFieldDefinition, value: RiskRegistryFieldValue): string | undefined {
   if (!Array.isArray(value)) {
-    return `${definition.displayName} must be one of the listed choices.`;
+    return `${getRiskRegistryDataFieldLabelFor(definition)} must be one of the listed choices.`;
   }
   if (definition.choices && value.some((choice) => typeof choice !== 'string' || definition.choices?.indexOf(choice) === -1)) {
-    return `${definition.displayName} must be one of the listed choices.`;
+    return `${getRiskRegistryDataFieldLabelFor(definition)} must be one of the listed choices.`;
   }
   return undefined;
 }
 
 function validateBooleanValue(definition: IRiskFieldDefinition, value: RiskRegistryFieldValue): string | undefined {
   if (typeof value !== 'boolean') {
-    return `${definition.displayName} must be Yes or No.`;
+    return `${getRiskRegistryDataFieldLabelFor(definition)} must be Yes or No.`;
   }
   return undefined;
 }
 
 function validateDateValue(definition: IRiskFieldDefinition, value: RiskRegistryFieldValue): string | undefined {
   if (typeof value !== 'string' && !(value instanceof Date)) {
-    return `${definition.displayName} must be a valid date.`;
+    return `${getRiskRegistryDataFieldLabelFor(definition)} must be a valid date.`;
   }
   const date = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(date.getTime())) {
-    return `${definition.displayName} must be a valid date.`;
+    return `${getRiskRegistryDataFieldLabelFor(definition)} must be a valid date.`;
   }
   return undefined;
 }
 
 function validateUserValue(definition: IRiskFieldDefinition, value: RiskRegistryFieldValue): string | undefined {
   if (!isPersonValue(value)) {
-    return `${definition.displayName} must be a person.`;
+    return `${getRiskRegistryDataFieldLabelFor(definition)} must be a person.`;
   }
   return undefined;
 }
@@ -524,7 +525,7 @@ export function validateConditionalField(key: RiskRegistryDataFieldKey, draft: R
     return undefined;
   }
   if (rule.isApplicable(draft) && isEmptyValue(draft[key])) {
-    return `${getRiskRegistryDataField(key).displayName} is required when ${rule.conditionDescription}.`;
+    return `${getRiskRegistryDataFieldLabel(key)} is required when ${rule.conditionDescription}.`;
   }
   return undefined;
 }

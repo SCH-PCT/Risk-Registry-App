@@ -2,6 +2,7 @@ import * as React from 'react';
 import { TextField, Dropdown, IDropdownOption, Toggle, IToggleStyleProps, IToggleStyles, DatePicker } from '@fluentui/react';
 
 import { getRiskRegistryDataField, RiskRegistryDataFieldKey } from '../../../config/listSchema';
+import { getRiskRegistryDataFieldLabel } from '../../../config/fieldLabels';
 import { IRiskRegistryPerson, RiskRegistryFieldValue } from '../../../models/domain/IRiskRegistryItem';
 import { IPeopleRepository } from '../../../data/repositories/IPeopleRepository';
 import { StatusBadge } from '../../../components/common/StatusBadge';
@@ -308,7 +309,7 @@ export const FieldRenderer: React.FC<IFieldRendererProps> = ({
   return (
     <div className={styles.field}>
       <label htmlFor={domId} className={styles.fieldLabel}>
-        {labelOverride ?? definition.displayName}
+        {labelOverride ?? getRiskRegistryDataFieldLabel(fieldKey)}
         {showRequiredAsterisk && mode === 'edit' && <span aria-hidden="true"> *</span>}
       </label>
       {fieldBody()}

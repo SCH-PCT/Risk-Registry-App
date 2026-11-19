@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { PrimaryButton, DefaultButton, MessageBar, MessageBarType } from '@fluentui/react';
 
-import { getRiskRegistryDataField, RiskRegistryDataFieldKey } from '../../../config/listSchema';
+import { RiskRegistryDataFieldKey } from '../../../config/listSchema';
+import { getRiskRegistryDataFieldLabel } from '../../../config/fieldLabels';
 import { useRiskRegistryDetail } from '../../../hooks/useRiskRegistryDetail';
 import { useUnsavedChangesWarning } from '../../../hooks/useUnsavedChangesWarning';
 import { useActiveStepUrlSync } from '../../../hooks/useActiveStepUrlSync';
@@ -13,7 +14,7 @@ import { PermissionAwareAction } from '../../../components/common/PermissionAwar
 import { GoBackButton } from '../../../components/common/GoBackButton';
 import { RefreshStatus } from '../../../components/feedback/RefreshStatus';
 import { RefreshNowButton } from '../../../components/feedback/RefreshNowButton';
-import { IRiskRegistryItem } from '../../../models/domain/IRiskRegistryItem';
+import { IRiskRegistryItem, RiskRegistryFieldValue } from '../../../models/domain/IRiskRegistryItem';
 import { RiskWorkflowStepNumber } from '../../../utilities/riskStepParam';
 import { IRiskRegistryDetailProps } from './IRiskRegistryDetailProps';
 import { DETAIL_STEPS } from './detailSections';
@@ -55,6 +56,10 @@ const RiskRegistryDetailLoaded: React.FC<IRiskRegistryDetailProps & { itemId: nu
   // below; `undefined` means no such prompt is pending.
   const [pendingStepChange, setPendingStepChange] = React.useState<RiskWorkflowStepNumber | undefined>(undefined);
   const [liveMessage, setLiveMessage] = React.useState('');
+  // The "fields that need attention" summary shows only after Submit/Save or
+  // Previous/Next is clicked, and hides again as soon as any field changes.
+  // Inline per-field errors are unaffected.
+  const [showErrorSummary, setShowErrorSummary] = React.useState(false);
 
   const manualRefreshRequestedRef = React.useRef(false);
   const lastAnnouncedCompletionRef = React.useRef<number | undefined>(undefined);
@@ -107,7 +112,13 @@ const RiskRegistryDetailLoaded: React.FC<IRiskRegistryDetailProps & { itemId: nu
     }
   };
 
+  const handleFieldChange = (key: RiskRegistryDataFieldKey, value: RiskRegistryFieldValue): void => {
+    setShowErrorSummary(false);
+    detail.setFieldValue(key, value);
+  };
+
   const handleSaveClick = (): void => {
+    setShowErrorSummary(true);
     detail.save().catch(() => {
       // `save()` resolves `false` and sets `saveError`/field errors for
       // every handled failure; this catch is a backstop against an
@@ -134,12 +145,19 @@ const RiskRegistryDetailLoaded: React.FC<IRiskRegistryDetailProps & { itemId: nu
     }
   };
 
+  /** Footer Previous/Next: same guard as a tile click, plus reveals the error summary. */
+  const handleFooterStepChange = (step: RiskWorkflowStepNumber): void => {
+    setShowErrorSummary(true);
+    handleStepChangeRequest(step);
+  };
+
   const handleSaveAndChangeStep = (): void => {
     const step = pendingStepChange;
     setPendingStepChange(undefined);
     if (step === undefined) {
       return;
     }
+    setShowErrorSummary(true);
     detail
       .save()
       .then((success) => {
@@ -168,7 +186,7 @@ const RiskRegistryDetailLoaded: React.FC<IRiskRegistryDetailProps & { itemId: nu
 
   const fieldErrorList = (Object.keys(detail.edit.fieldErrors) as RiskRegistryDataFieldKey[]).map((key) => ({
     fieldKey: key,
-    label: getRiskRegistryDataField(key).displayName,
+    label: getRiskRegistryDataFieldLabel(key),
     message: detail.edit.fieldErrors[key] as string
   }));
 
@@ -216,7 +234,7 @@ const RiskRegistryDetailLoaded: React.FC<IRiskRegistryDetailProps & { itemId: nu
               mode={mode}
               value={values.riskStatus}
               error={detail.edit.fieldErrors.riskStatus}
-              onChange={detail.setFieldValue}
+              onChange={handleFieldChange}
             />
           </div>
 
@@ -258,7 +276,7 @@ const RiskRegistryDetailLoaded: React.FC<IRiskRegistryDetailProps & { itemId: nu
         </div>
       </header>
 
-      {detail.edit.isEditing && fieldErrorList.length > 0 && (
+      {detail.edit.isEditing && showErrorSummary && fieldErrorList.length > 0 && (
         <FormFieldErrorSummary errors={fieldErrorList} onFocusField={(key) => focusField(key as RiskRegistryDataFieldKey)} />
       )}
 
@@ -276,7 +294,7 @@ const RiskRegistryDetailLoaded: React.FC<IRiskRegistryDetailProps & { itemId: nu
             mode={mode}
             values={values}
             fieldErrors={detail.edit.fieldErrors}
-            onFieldChange={detail.setFieldValue}
+            onFieldChange={handleFieldChange}
             riskBusinessId={typeof values.riskId === 'number' ? values.riskId : undefined}
             riskItemId={itemId}
             documents={repositories.documents}
@@ -291,7 +309,7 @@ const RiskRegistryDetailLoaded: React.FC<IRiskRegistryDetailProps & { itemId: nu
 
       <StepFooter
         activeStep={activeStep}
-        onStepChange={handleStepChangeRequest}
+        onStepChange={handleFooterStepChange}
         onSubmit={handleSaveClick}
         submitLabel={detail.edit.isSaving ? 'Submitting…' : 'Submit'}
         isSubmitDisabled={!detail.edit.isDirty || !detail.edit.isValid || detail.edit.isSaving}

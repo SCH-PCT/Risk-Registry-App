@@ -30,6 +30,7 @@ import { PnpRiskDocumentRepository } from '../../data/repositories/pnp/PnpRiskDo
 import { PnpPeopleRepository } from '../../data/repositories/pnp/PnpPeopleRepository';
 import { PnpWebPermissionsService } from '../../data/services/pnp/PnpWebPermissionsService';
 import { getSp } from '../../data/services/spContext';
+import { loadRiskRegistryDataFieldLabels } from '../../data/services/pnp/loadRiskRegistryDataFieldLabels';
 import { IRiskRegistryDetailRepositories } from '../../hooks/useRiskRegistryDetail';
 
 export interface IRiskRegistryDetailWebPartProperties {
@@ -57,7 +58,7 @@ export default class RiskRegistryDetailWebPart extends BaseClientSideWebPart<IRi
   private _repositories: IRiskRegistryDetailRepositories | undefined;
   private _themeProvider: ThemeProvider | undefined;
 
-  protected onInit(): Promise<void> {
+  protected async onInit(): Promise<void> {
     this._repositories = {
       riskRegistry: new PnpRiskRegistryRepository(this.context),
       actions: new PnpRiskActionRepository(),
@@ -74,6 +75,9 @@ export default class RiskRegistryDetailWebPart extends BaseClientSideWebPart<IRi
     this._themeProvider = this.context.serviceScope.consume(ThemeProvider.serviceKey);
     applySharePointTheme(this._themeProvider.tryGetTheme());
     this._themeProvider.themeChangedEvent.add(this, this._onThemeChanged);
+
+    // Labels must be in place before the first render; loading never rejects.
+    await loadRiskRegistryDataFieldLabels(getSp(this.context));
 
     return super.onInit();
   }

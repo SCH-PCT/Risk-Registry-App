@@ -1,13 +1,14 @@
 import * as React from 'react';
 import { PrimaryButton, MessageBar, MessageBarType } from '@fluentui/react';
 
-import { getRiskRegistryDataField, RiskRegistryDataFieldKey } from '../../../config/listSchema';
+import { RiskRegistryDataFieldKey } from '../../../config/listSchema';
+import { getRiskRegistryDataFieldLabel } from '../../../config/fieldLabels';
 import { RiskWorkflowStepNumber } from '../../../utilities/riskStepParam';
 import { useRiskRegistryCreate } from '../../../hooks/useRiskRegistryCreate';
 import { useActiveStepUrlSync } from '../../../hooks/useActiveStepUrlSync';
 import { IRiskRegistryDetailRepositories } from '../../../hooks/useRiskRegistryDetail';
 import { IWebPermissionsService } from '../../../data/services/IWebPermissionsService';
-import { IRiskRegistryItem } from '../../../models/domain/IRiskRegistryItem';
+import { IRiskRegistryItem, RiskRegistryFieldValue } from '../../../models/domain/IRiskRegistryItem';
 import { FormFieldErrorSummary } from '../../../components/common/FormFieldErrorSummary';
 import { GoBackButton } from '../../../components/common/GoBackButton';
 import { DETAIL_STEPS } from './detailSections';
@@ -77,7 +78,22 @@ export const RiskRegistryDetailNew: React.FC<IRiskRegistryDetailNewProps> = ({
   // step-gating applies while it's on.
   const { activeStep, setActiveStep } = useActiveStepUrlSync(isAdminView || selectedStep <= 1 ? selectedStep : 1);
 
+  // See `RiskRegistryDetail.tsx`: the error summary shows only after
+  // Create/Submit or Previous/Next, and hides on any field change.
+  const [showErrorSummary, setShowErrorSummary] = React.useState(false);
+
+  const handleFieldChange = (key: RiskRegistryDataFieldKey, value: RiskRegistryFieldValue): void => {
+    setShowErrorSummary(false);
+    create.setFieldValue(key, value);
+  };
+
+  const handleFooterStepChange = (step: RiskWorkflowStepNumber): void => {
+    setShowErrorSummary(true);
+    setActiveStep(step);
+  };
+
   const handleCreateClick = (): void => {
+    setShowErrorSummary(true);
     create.create().then((item) => {
       if (item) {
         onCreated(item);
@@ -92,7 +108,7 @@ export const RiskRegistryDetailNew: React.FC<IRiskRegistryDetailNewProps> = ({
 
   const fieldErrorList = (Object.keys(create.fieldErrors) as RiskRegistryDataFieldKey[]).map((key) => ({
     fieldKey: key,
-    label: getRiskRegistryDataField(key).displayName,
+    label: getRiskRegistryDataFieldLabel(key),
     message: create.fieldErrors[key] as string
   }));
 
@@ -137,7 +153,7 @@ export const RiskRegistryDetailNew: React.FC<IRiskRegistryDetailNewProps> = ({
         />
       </header>
 
-      {fieldErrorList.length > 0 && (
+      {showErrorSummary && fieldErrorList.length > 0 && (
         <FormFieldErrorSummary errors={fieldErrorList} onFocusField={(key) => focusField(key as RiskRegistryDataFieldKey)} />
       )}
 
@@ -150,7 +166,7 @@ export const RiskRegistryDetailNew: React.FC<IRiskRegistryDetailNewProps> = ({
             mode="edit"
             values={create.draftValues}
             fieldErrors={create.fieldErrors}
-            onFieldChange={create.setFieldValue}
+            onFieldChange={handleFieldChange}
             riskBusinessId={typeof create.draftValues.riskId === 'number' ? create.draftValues.riskId : undefined}
             documents={repositories.documents}
             people={repositories.people}
@@ -163,7 +179,7 @@ export const RiskRegistryDetailNew: React.FC<IRiskRegistryDetailNewProps> = ({
 
       <StepFooter
         activeStep={activeStep}
-        onStepChange={setActiveStep}
+        onStepChange={handleFooterStepChange}
         onSubmit={handleCreateClick}
         submitLabel={create.isSaving ? 'Submitting…' : 'Submit'}
         isSubmitDisabled={create.isSaving || create.canCreate !== true}

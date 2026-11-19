@@ -373,11 +373,29 @@ describe('RiskRegistryDetail — edit validation', () => {
     // Clearing the required Title field: invalid, so still disabled.
     fireEvent.change(titleInput(container), { target: { value: '' } });
     await waitFor(() => expect(saveButton).toBeDisabled());
-    expect(screen.getByText(/needs attention/i)).toBeInTheDocument();
+    // The summary waits for Submit/Previous/Next; a field change alone never shows it.
+    expect(screen.queryByText(/needs attention/i)).not.toBeInTheDocument();
 
     // A valid, changed value: now enabled.
     fireEvent.change(titleInput(container), { target: { value: 'Updated risk title' } });
     await waitFor(() => expect(saveButton).not.toBeDisabled());
+  });
+
+  it('shows the error summary on Previous/Next and hides it again on the next field change', async () => {
+    const { container } = render(<RiskRegistryDetail {...buildProps()} />);
+    await screen.findByRole('button', { name: /^Save$/ });
+
+    fireEvent.change(titleInput(container), { target: { value: '' } });
+    expect(screen.queryByText(/needs attention/i)).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /Next Step/ }));
+    expect(await screen.findByText(/needs attention/i)).toBeInTheDocument();
+    // Unsaved changes: stay on this step rather than saving or discarding.
+    fireEvent.click(await screen.findByRole('button', { name: 'Stay on This Step' }));
+
+    fireEvent.change(titleInput(container), { target: { value: 'x' } });
+    fireEvent.change(titleInput(container), { target: { value: '' } });
+    await waitFor(() => expect(screen.queryByText(/needs attention/i)).not.toBeInTheDocument());
   });
 });
 
@@ -583,7 +601,8 @@ describe('RiskRegistryDetail — conditional required field', () => {
 
     const saveButton = await screen.findByRole('button', { name: /^Save$/ });
     await waitFor(() => expect(saveButton).toBeDisabled());
-    expect(screen.getByText(/needs attention/i)).toBeInTheDocument();
+    // Inline error only — the summary waits for Submit/Previous/Next.
+    expect(screen.queryByText(/needs attention/i)).not.toBeInTheDocument();
     expect(screen.getAllByText(/Other Resource for Correction is required/i).length).toBeGreaterThan(0);
 
     const otherInput = container.querySelector(`#${fieldDomId('otherResourceForCorrection')}`) as HTMLInputElement;
